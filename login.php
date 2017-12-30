@@ -24,6 +24,7 @@ if(isset($_POST['email']))
 
 include_once 'connectionToDB.php';
 include_once 'userFunctions.php';
+include_once 'arhivaLogiranja.php';
 
 $link = connectToDB();
 
@@ -38,9 +39,11 @@ if(isset($_POST['email']) && isset($_POST['password']))
 	if($loggedIn == true)
 	{
 		echo("Uspješno logiranje!");
+		//TODO: these 4 lines below are the same as 4 lines when user is registered
 		$_SESSION['loggedIn'] = true;
 		$_SESSION['email'] = $_POST['email'];
 		$_SESSION['userId'] = getUserId();
+		arhivirajLogin($_SESSION['userId']);
 		header("Location: /RWA_ducani/index.php");
 	}
 	else
@@ -48,11 +51,6 @@ if(isset($_POST['email']) && isset($_POST['password']))
 		echo("Email i odgovarajuća šifa se ne podudaraju");
 	}
 }
-
-/*if(isset($_SESSION["logged"]))
-{
-	$isLogged = $_SESSION["logged"];
-}*/
 
 function checkCredentials($link, $email, $pw)
 {

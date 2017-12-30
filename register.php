@@ -1,6 +1,9 @@
 <?php 
 
-include 'connectionToDB.php';
+include_once 'connectionToDB.php';
+include_once 'arhivaLogiranja.php';
+include_once 'userFunctions.php';
+
 
 session_start();
 
@@ -73,7 +76,7 @@ function register($link, $email, $pw)
 			}
 		}
 	}
-	$query = "INSERT INTO `korisnik` (`id_korisnik`, `email`, `password`) VALUES (NULL, '".$email."', '".$pw."');";
+	$query = "INSERT INTO `korisnik` (`id_korisnik`, `email`, `password`, `razina_ovlasti`) VALUES (NULL, '".$email."', '".$pw."', 0);";
 	$result = mysqli_query($link, $query);
 	if(!$result)
 	{
@@ -83,7 +86,11 @@ function register($link, $email, $pw)
 	{
 		//echo("Successfully registered, <a href='login.php'>log in</a>");
 		echo("Automatsko logiranje, bit ćete preusmjereni na početnu stranicu");
+		//TODO: these 4 lines below are the same as 4 lines when user is logged in
 		$_SESSION['loggedIn'] = true;
+		$_SESSION['email'] = $_POST['email'];
+		$_SESSION['userId'] = getUserId();
+		arhivirajLogin($_SESSION['userId']);
 		header("Location: /RWA_ducani/index.php");
 	}
 }
