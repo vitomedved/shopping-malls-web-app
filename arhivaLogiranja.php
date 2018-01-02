@@ -22,6 +22,7 @@ function arhivirajLogin($userId)
 		{
 			echo("All good");
 		}
+		mysqli_close($link);
 	}
 }
 

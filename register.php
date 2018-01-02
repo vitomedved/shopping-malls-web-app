@@ -36,6 +36,7 @@ if(isset($_POST['email']) && isset($_POST['password']) && isset($_POST['repeat_p
 		if($link)
 		{
 			$registered = register($link, $_POST['email'], $_POST['password']);
+			mysqli_close($link);
 		}
 		else
 		{

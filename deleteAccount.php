@@ -24,6 +24,7 @@ else
 		session_unset();
 		session_destroy();
 	}
+	mysqli_close($link);
 }
 
 header("Location: /RWA_ducani/index.php");

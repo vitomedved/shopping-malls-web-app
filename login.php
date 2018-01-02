@@ -33,25 +33,29 @@ if($link == false)
 {
 	echo("Can't connect to DB.");
 }
-
-if(isset($_POST['email']) && isset($_POST['password']))
+else
 {
-	$loggedIn = checkCredentials($link, $_POST['email'], $_POST['password']);
-	if($loggedIn == true)
+	if(isset($_POST['email']) && isset($_POST['password']))
 	{
-		echo("Uspješno logiranje!");
-		//TODO: these 4 lines below are the same as 4 lines when user is registered
-		$_SESSION['loggedIn'] = true;
-		$_SESSION['email'] = $_POST['email'];
-		$_SESSION['userId'] = getUserId();
-		arhivirajLogin($_SESSION['userId']);
-		header("Location: /RWA_ducani/index.php");
-	}
-	else
-	{
-		echo("Email i odgovarajuća šifa se ne podudaraju");
+		$loggedIn = checkCredentials($link, $_POST['email'], $_POST['password']);
+		if($loggedIn == true)
+		{
+			echo("Uspješno logiranje!");
+			//TODO: these 4 lines below are the same as 4 lines when user is registered
+			$_SESSION['loggedIn'] = true;
+			$_SESSION['email'] = $_POST['email'];
+			$_SESSION['userId'] = getUserId();
+			arhivirajLogin($_SESSION['userId']);
+			header("Location: /RWA_ducani/index.php");
+		}
+		else
+		{
+			echo("Email i odgovarajuća šifa se ne podudaraju");
+		}
 	}
 }
+mysqli_close($link);
+
 
 function checkCredentials($link, $email, $pw)
 {

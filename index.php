@@ -12,6 +12,7 @@
     <?php
     
     //include "menu.html";
+	include 'userFunctions.php';
 	
 	session_start();
 	
@@ -19,7 +20,15 @@
 	{
 		echo("<a href='logout.php'>LOGOUT</a> or <a href='deleteAccount.php'>DELETE ACCOUNT</a>");
 		echo("<br>Your email is: ".$_SESSION['email'].", and id: ".$_SESSION['userId']);
-		echo("<br><a href='podatak.php'> Click here to hange your data</a>");
+		echo("<br><a href='podatak.php'> Click here to hange your data</a><br>");
+		if(isAdmin())
+		{
+			echo("Vi ste admin, <a href='dodajDucan.php'>dodaj dućan</a><br>");
+		}
+		else
+		{
+			echo("Vi ste pleb");
+		}
 	}
 	else
 	{
@@ -50,7 +59,7 @@
                         <h4>Ime dućana</h4>
                     </div>
                     <p>
-                        <a href="#" class="btn btn-primary">Pogledaj komentare</a>
+                        <a href="ducan.php?id=1" class="btn btn-primary">Pogledaj komentare</a>
                     </p>
                 </div>
             </div>

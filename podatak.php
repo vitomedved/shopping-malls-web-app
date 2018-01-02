@@ -35,11 +35,11 @@ if(isset($_GET['imeKorisnika']) || isset($_GET['prezimeKorisnika']) || isset($_G
 function getIme()
 {
 	$link = connectToDB();
-
+	$retVal = '';
 	if(!$link)
 	{
-		echo('Ne mogu se spojiti s bazom');
-		return '';
+		$err = 'Ne mogu se spojiti s bazom';
+		return $err;
 	}
 	
 	$query = "SELECT ime FROM podatak WHERE podatak.id_korisnik=".$_SESSION['userId'].";";
@@ -48,21 +48,23 @@ function getIme()
 	{
 		while($row = mysqli_fetch_array($result))
 		{
-			return $row['ime'];
+			$retVal = $row['ime'];
 		}
 	}
-	return '';
 	
+	mysqli_close($link);
+	return $retVal;
 }
 
 function getPrezime()
 {
 	$link = connectToDB();
-
+	$retVal = '';
+	
 	if(!$link)
 	{
-		echo('Ne mogu se spojiti s bazom');
-		return '';
+		$err = 'Ne mogu se spojiti s bazom';
+		return $err;
 	}
 	
 	$query = "SELECT prezime FROM podatak WHERE podatak.id_korisnik=".$_SESSION['userId'].";";
@@ -71,20 +73,22 @@ function getPrezime()
 	{
 		while($row = mysqli_fetch_array($result))
 		{
-			return $row['prezime'];
+			$retVal = $row['prezime'];
 		}
 	}
-	return '';
+	mysqli_close($link);
+	return $retVal;
 }
 
 function getNajDucan()
 {
 	$link = connectToDB();
-
+	$retVal = '';
+	
 	if(!$link)
 	{
-		echo('Ne mogu se spojiti s bazom');
-		return '';
+		$err = 'Ne mogu se spojiti s bazom';
+		return $err;
 	}
 	
 	$query = "SELECT naj_ducan FROM podatak WHERE podatak.id_korisnik=".$_SESSION['userId'].";";
@@ -93,10 +97,11 @@ function getNajDucan()
 	{
 		while($row = mysqli_fetch_array($result))
 		{
-			return $row['naj_ducan'];
+			$retVal = $row['naj_ducan'];
 		}
 	}
-	return '';
+	mysqli_close($link);
+	return $retVal;
 }
 
 function spremiPodatke($ime, $prezime, $najDucan)
@@ -113,15 +118,17 @@ function spremiPodatke($ime, $prezime, $najDucan)
 	$result = mysqli_query($link, $query);
 	if(!$result)
 	{
+		mysqli_close($link);
 		return false;
 	}
 	$query = "INSERT INTO `podatak` (`id_podatak`, `ime`, `prezime`, `naj_ducan`, `id_korisnik`) VALUES (NULL, '".$ime."', '".$prezime."', '".$najDucan."', '".$_SESSION['userId']."');";
 	$result = mysqli_query($link, $query);
 	if(!$result)
 	{
+		mysqli_close($link);
 		return false;
 	}
-	
+	mysqli_close($link);
 	header("Location: /RWA_ducani/podatak.php");
 	return true;	
 }
