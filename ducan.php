@@ -1,6 +1,7 @@
 <?php
 
 include 'connectionToDB.php';
+include 'userFunctions.php';
 
 session_start();
 
@@ -79,24 +80,76 @@ if(isset($_POST['ocjena']))
 //izracunava vrijednost ocjene i sprema tu vrijednost u $ocjena varijablu preko $GLOBALS['ocjena']
 getRating();
 
+
+//sprema komentar u bazu
+if(isset($_POST['sadrzaj']))
+{
+	if(isset($_POST['naslov']))
+	{
+		$naslov = $_POST['naslov'];
+	}
+	else
+	{
+		$naslov = '';
+	}
+	$sadrzaj = $_POST['sadrzaj'];
+	
+	$link = connectToDB();
+	if($link)
+	{
+		$query = "INSERT INTO `komentar` (`id_komentar`, `naslov`, `sadrzaj`, `id_korisnik`, `id_ducan`) VALUES (NULL, '".$naslov."', '".$sadrzaj."', '".$_SESSION['userId']."', '".$_GET['id']."');";
+		$result = mysqli_query($link, $query);
+		if(!$result)
+		{
+			echo("Komentar nije dodan, idk why");
+		}
+	}
+	
+	mysqli_close($link);
+	header("Location: /RWA_ducani/ducan.php?id=".$_GET['id']);
+}
+
 ?>
 
 <h1>DUĆAN: <?php echo($GLOBALS['ime'].', OCJENA: '.$GLOBALS['ocjena']) ?></h1>
+<h3>tu neku slikicu zabacit dinamicki</h3>
 <form action='ducan.php?id=<?php echo($_GET['id']) ?>' method='post'>
 	Ocjeni dućan:
-	<select name='ocjena'>
+	<select name='ocjena' <?php if(isGuest()) echo 'disabled'; ?>>
 		<option value='1'>1</option>
 		<option value='2'>2</option>
 		<option value='3'>3</option>
 		<option value='4'>4</option>
 		<option value='5'>5</option>
 	</select>
-	<input type='submit' value='Ocijeni'>
+	<input type='submit' value='Ocijeni' <?php if(isGuest()) echo 'disabled'; ?>>
+	
+	<?php if(isGuest()) echo "<a href='login.php'>Logiraj se</a>"; ?>
 </form>
+
+<h2>Komentari predivno uređeni:</h2>
+<br><hr><br>
+
+<?php
+
+listComments();
+
+?>
+
+<form action='ducan.php?id=<?php echo($_GET['id']) ?>' method='post'>
+	<br>
+	<input type='text' name='naslov' placeholder='Naslov komentara (neobavezno)' <?php if(isGuest()) echo 'disabled'; ?>><br>
+	<textarea name='sadrzaj' placeholder='Ovdje piši svoj komentar' required <?php if(isGuest()) echo 'disabled'; ?>></textarea><br>
+	<input type='submit' <?php echo isGuest() ?>>
+	<?php if(isGuest()) echo "<a href='login.php'>Logiraj se</a>"; ?>
+</form>
+
+
 <a href='index.php'> Povratak na početnu stranicu</a>
 
 <?php
 
+//uzima iz baze prosjecni rejting za ducan
 function getRating()
 {
 	$sumaOcjena = 0.0;
@@ -154,6 +207,38 @@ function checkRating($userId)
 	}
 	mysqli_close($link);
 	return $retVal;
+}
+
+function listComments()
+{
+	$link = connectToDB();
+	if($link)
+	{
+		$query = "SELECT * FROM komentar NATURAL JOIN podatak";
+		$result = mysqli_query($link, $query);
+		if($result)
+		{
+			while($row = mysqli_fetch_array($result))
+			{
+				echo("Komentar by: ".$row['ime']." ".$row['prezime'].", vrijeme: ".date('d.m.Y., H:i\h', strtotime($row['vrijeme']))."<br>
+				<div>".$row['naslov']."<br>".$row['sadrzaj']."</div><br>");
+				if(isAdmin() || ($row['id_korisnik'] == $_SESSION['userId']))
+				{
+					echo("<a href='editComment.php?commentId=".$row['id_komentar']."'>EDIT</a> | <a href='removeComment.php?commentId=".$row['id_komentar']."'>REMOVE</a><br><hr><br>");
+				}
+			}
+		}
+	}
+	mysqli_close($link);
+}
+
+function isGuest()
+{
+	if(!isset($_SESSION['loggedIn']) || ($_SESSION['loggedIn'] == false))
+	{
+		return true;
+	}
+	return false;
 }
 
 ?>
