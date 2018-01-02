@@ -224,7 +224,7 @@ function listComments()
 				<div>".$row['naslov']."<br>".$row['sadrzaj']."</div><br>");
 				if(isAdmin() || ($row['id_korisnik'] == $_SESSION['userId']))
 				{
-					echo("<a href='editComment.php?commentId=".$row['id_komentar']."'>EDIT</a> | <a href='removeComment.php?commentId=".$row['id_komentar']."'>REMOVE</a><br><hr><br>");
+					echo("<a href='editComment.php?commentId=".$row['id_komentar']."'>EDIT</a> | <a href='removeComment.php?commentId=".$row['id_komentar']."&ducanId=".$_GET['id']."'>REMOVE</a><br><hr><br>");
 				}
 			}
 		}
