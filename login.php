@@ -19,6 +19,7 @@ if(isset($_POST['email']))
 	Password: <input type='password' name='password' required> <br>
 	<input type='submit'>
 </form>
+<a href='index.php'> Povratak na početnu stranicu</a>
 
 <?php
 

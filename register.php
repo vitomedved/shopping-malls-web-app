@@ -22,6 +22,7 @@ if(isset($_POST['email']))
 	Repeat password: <input type='password' name='repeat_password' required> <br>
 	<input type='submit'>
 </form>
+<a href='index.php'> Povratak na početnu stranicu</a>
 
 <?php
 

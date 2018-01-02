@@ -12,7 +12,7 @@ if(!$link)
 }
 else
 {
-	$query = "DELETE FROM `korisnik` WHERE `korisnik`.`id_korisnik` = ".$_SESSION['userId'].";";
+	$query = "DELETE FROM `korisnik` WHERE `korisnik`.`id_korisnik` = ".$_SESSION['userId']."";
 	$result = mysqli_query($link, $query);
 	if(!$result)
 	{

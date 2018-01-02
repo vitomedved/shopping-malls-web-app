@@ -19,6 +19,7 @@
 	{
 		echo("<a href='logout.php'>LOGOUT</a> or <a href='deleteAccount.php'>DELETE ACCOUNT</a>");
 		echo("<br>Your email is: ".$_SESSION['email'].", and id: ".$_SESSION['userId']);
+		echo("<br><a href='podatak.php'> Click here to hange your data</a>");
 	}
 	else
 	{
