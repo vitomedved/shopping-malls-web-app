@@ -4,11 +4,6 @@
 
 include_once 'connectionToDB.php';
 
-if((isset($_SESSION['loggedIn']) == false) || ($_SESSION['loggedIn'] == false))
-{
-	//header("Location: /RWA_ducani/index.php");
-}
-
 function getUserId()
 {
 	$link = connectToDB();
@@ -33,6 +28,10 @@ function getUserId()
 
 function isAdmin()
 {
+	if((isset($_SESSION['loggedIn']) == false) || ($_SESSION['loggedIn'] == false))
+	{
+		return false;
+	}
 	$link = connectToDB();
 	
 	if($link)

@@ -140,7 +140,7 @@ listComments();
 	<br>
 	<input type='text' name='naslov' placeholder='Naslov komentara (neobavezno)' <?php if(isGuest()) echo 'disabled'; ?>><br>
 	<textarea name='sadrzaj' placeholder='Ovdje piši svoj komentar' required <?php if(isGuest()) echo 'disabled'; ?>></textarea><br>
-	<input type='submit' <?php echo isGuest() ?>>
+	<input type='submit'>
 	<?php if(isGuest()) echo "<a href='login.php'>Logiraj se</a>"; ?>
 </form>
 
@@ -222,10 +222,14 @@ function listComments()
 			{
 				echo("Komentar by: ".$row['ime']." ".$row['prezime'].", vrijeme: ".date('d.m.Y., H:i\h', strtotime($row['vrijeme']))."<br>
 				<div>".$row['naslov']."<br>".$row['sadrzaj']."</div><br>");
-				if(isAdmin() || ($row['id_korisnik'] == $_SESSION['userId']))
+				if(isset($_SESSION['loggedIn']) && ($_SESSION['loggedIn'] == true))
 				{
-					echo("<a href='editComment.php?commentId=".$row['id_komentar']."'>EDIT</a> | <a href='removeComment.php?commentId=".$row['id_komentar']."&ducanId=".$_GET['id']."'>REMOVE</a><br><hr><br>");
+					if(isAdmin() || ($row['id_korisnik'] == $_SESSION['userId']))
+					{
+						echo("<a href='editComment.php?commentId=".$row['id_komentar']."&ducanId=".$_GET['id']."'>EDIT</a> | <a href='removeComment.php?commentId=".$row['id_komentar']."&ducanId=".$_GET['id']."'>REMOVE</a><br><hr><br>");
+					}
 				}
+				
 			}
 		}
 	}
