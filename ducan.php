@@ -7,6 +7,7 @@ session_start();
 $ime = '';
 $ocjena = 0;
 
+//Provjerava ako je id ducana unesen i ako je ispravan, tj. ako postoji i odmah uzima ime ducana van
 if(isset($_GET['id']) == false)
 {
 	header("Location: /RWA_ducani/index.php");
@@ -26,7 +27,6 @@ else
 			if($row['id_ducan'] == $ducanId)
 			{
 				$GLOBALS['ime'] = $row['ime'];
-				$GLOBALS['ocjena'] = $row['ocjena'];
 				$exist = true;
 				break;
 			}
@@ -38,27 +38,45 @@ else
 	}
 }
 
+
+//sprema ocjenu korisnika za odredeni ducan ili ako je vec glasao, updejta mu ocjenu
 if(isset($_POST['ocjena']))
 {
 	$canRate = checkRating($_SESSION['userId']);
 	$novaOcjena = $_POST['ocjena'];
 	$link = connectToDB();
-	if($canRate && $link)
+	if($link)
 	{
-		$query = "INSERT INTO `ocjena` (`id_ocjena`, `vrijednost`, `id_ducan`, `id_korisnik`) VALUES (NULL, '".$novaOcjena."', '".$_GET['id']."', '".$_SESSION['userId']."');";
-		$result = mysqli_query($link, $query);
-		if(!$result)
+		if($canRate)
 		{
-			echo("not rated");
+			$query = "INSERT INTO `ocjena` (`id_ocjena`, `vrijednost`, `id_ducan`, `id_korisnik`) VALUES (NULL, '".$novaOcjena."', '".$_GET['id']."', '".$_SESSION['userId']."');";
+			$result = mysqli_query($link, $query);
+			if(!$result)
+			{
+				echo("not rated");
+			}
+			else
+			{
+				header("Location: /RWA_ducani/ducan.php?id=".$_GET['id']);
+			}
 		}
 		else
+			//inace znaci da je vec ocjenio pa updejtaj vrijednost
 		{
-			header("Location: /RWA_ducani/ducan.php?id=".$_GET['id']);
+			$query = "UPDATE ocjena SET vrijednost='".$novaOcjena."' WHERE id_korisnik='".$_SESSION['userId']."';";
+			$result = mysqli_query($link, $query);
+			if(!$result)
+			{
+				echo("not rated");
+			}
+			echo("Nova ocjena spremljena");
 		}
+		
 	}
 	mysqli_close($link);
 }
 
+//izracunava vrijednost ocjene i sprema tu vrijednost u $ocjena varijablu preko $GLOBALS['ocjena']
 getRating();
 
 ?>
@@ -128,7 +146,6 @@ function checkRating($userId)
 			{
 				if($row['id_korisnik'] == $userId)
 				{
-					echo("Vec ste glasali!");
 					$retVal = false;
 					break;
 				}
