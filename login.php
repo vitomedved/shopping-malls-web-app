@@ -44,7 +44,7 @@ else
 			//TODO: these 4 lines below are the same as 4 lines when user is registered
 			$_SESSION['loggedIn'] = true;
 			$_SESSION['email'] = $_POST['email'];
-			$_SESSION['userId'] = getUserId();
+			$_SESSION['userId'] = getUserId($_SESSION['email']);
 			arhivirajLogin($_SESSION['userId']);
 			header("Location: /RWA_ducani/index.php");
 		}

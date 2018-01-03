@@ -7,7 +7,7 @@ include 'userFunctions.php';
 
 session_start();
 
-if(isAdmin() == false)
+if(isAdmin($_SESSION['userId']) == false)
 {
 	header("Location: /RWA_ducani/index.php");
 }
@@ -46,17 +46,18 @@ if(isset($_GET['imeDucana']) && isset($_GET['tipDucana']) && isset($_GET['vrstaD
 function spremiDucan($ime, $tip, $vrsta)
 {
 	$link = connectToDB();
-
-	$query = "INSERT INTO `ducan` (`id_ducan`, `ime`, `ocjena`, `tip_ducana`, `vrsta_ducana`) VALUES (NULL, '".$ime."', '0', '".$tip."', '".$vrsta."');";
-	$result = mysqli_query($link, $query);
-	if(!$result)
+	if($link)
 	{
-		echo("Dućan nije dodan, error");
-		mysqli_close($link);
-		return false;
+		$query = "INSERT INTO `ducan` (`id_ducan`, `ime`, `tip_ducana`, `vrsta_ducana`) VALUES (NULL, '".$ime."', '".$tip."', '".$vrsta."');";
+		$result = mysqli_query($link, $query);
+		if(!$result)
+		{
+			echo("Dućan nije dodan, error");
+			mysqli_close($link);
+			return false;
+		}
 	}
 	mysqli_close($link);
-	
 	header("Location: /RWA_ducani/index.php");
 }
 

@@ -1,16 +1,15 @@
-<?php 
-
-//session_start();
+<?php
 
 include_once 'connectionToDB.php';
 
-function getUserId()
+//vraca userId prema e-mailu ili -2/-1 ako je error
+function getUserId($email)
 {
 	$link = connectToDB();
 	$retVal = -1;
 	if($link)
 	{
-		$query = "SELECT id_korisnik FROM korisnik WHERE email='".$_SESSION['email']."';";
+		$query = "SELECT id_korisnik FROM korisnik WHERE email='".$email."';";
 		$result = mysqli_query($link, $query);
 		while($row = mysqli_fetch_array($result))
 		{
@@ -26,17 +25,14 @@ function getUserId()
 	return $retVal;
 }
 
-function isAdmin()
+//provjerava ako je korisnik admin, vraca true/false
+function isAdmin($userId)
 {
-	if((isset($_SESSION['loggedIn']) == false) || ($_SESSION['loggedIn'] == false))
-	{
-		return false;
-	}
 	$link = connectToDB();
 	
 	if($link)
 	{
-		$query = "SELECT razina_ovlasti FROM korisnik WHERE id_korisnik='".$_SESSION['userId']."';";
+		$query = "SELECT razina_ovlasti FROM korisnik WHERE id_korisnik='".$userId."';";
 		$result = mysqli_query($link, $query);
 		while($row = mysqli_fetch_array($result))
 		{
@@ -48,6 +44,16 @@ function isAdmin()
 		}
 	}
 	mysqli_close($link);
+	return false;
+}
+
+//provjerava ako je korisnik logiran, vraca true/false
+function isGuest()
+{
+	if(!isset($_SESSION['loggedIn']) || ($_SESSION['loggedIn'] == false))
+	{
+		return true;
+	}
 	return false;
 }
 

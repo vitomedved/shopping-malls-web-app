@@ -2,20 +2,30 @@
 
 include 'connectionToDB.php';
 include 'komentarFunctions.php';
+include 'userFunctions.php';
 
 session_start();
 
-if(!isset($_SESSION['loggedIn']) || ($_SESSION['loggedIn'] != true) || !isset($_GET['commentId']) || !isset($_GET['ducanId']))
+if(isGuest() || !isset($_GET['commentId']) || !isset($_GET['ducanId']))
 {
 	header("Location: /RWA_ducani/error.php");
 }
-//TODO ONLY ALLOW USER TO EDIT, ADMIN CAN'T EDIT
-$ducanId = checkUserGetDucanId($_GET['commentId'], $_SESSION['userId']);
 
-$naslov = '';
-$sadrzaj = '';
+$ducanId = $_GET['ducanId'];
+$commentId = $_GET['commentId'];
 
-getData($_GET['commentId']);
+$isOwner = validateOwnership($commentId, $_SESSION['userId']);
+
+if(!$isOwner)
+{
+	header("Location: /RWA_ducani/error.php");
+}
+
+$naslov = getNaslov($commentId);
+$sadrzaj = getSadrzaj($commentId);
+
+//getCommentData($_GET['commentId']);
+
 //sprema komentar u bazu
 if(isset($_POST['sadrzaj']))
 {
@@ -29,21 +39,16 @@ if(isset($_POST['sadrzaj']))
 	}
 	$sadrzaj = $_POST['sadrzaj'];
 	
-	$link = connectToDB();
-	if($link)
-	{	date_default_timezone_set('Europe/Zagreb');
-		$query = "UPDATE komentar SET naslov='".$naslov."', sadrzaj='".$sadrzaj."', id_korisnik='".$_SESSION['userId']."', id_ducan='".$_GET['ducanId']."', vrijeme='".date('Y-m-d H:i:s')."' WHERE id_komentar='".$_GET['commentId']."';";
-		$result = mysqli_query($link, $query);
-		if(!$result)
-		{
-			echo("Komentar nije editan, idk why");
-		}
+	$edited = editComment($commentId, $_SESSION['userId'], $naslov, $sadrzaj);
+	if($edited)
+	{
+		header("Location: /RWA_ducani/ducan.php?id=".$_GET['ducanId']);
 	}
-	
-	mysqli_close($link);
-	header("Location: /RWA_ducani/ducan.php?id=".$_GET['ducanId']);
+	else
+	{
+		echo "error with editing, linija 44, editComment.php";
+	}
 }
-echo $_GET['ducanId'];
 
 ?>
 
@@ -56,7 +61,7 @@ echo $_GET['ducanId'];
 
 <?php
 
-function getData($commentId)
+/*function getCommentData($commentId)
 {
 	$link = connectToDB();
 	if($link)
@@ -73,6 +78,66 @@ function getData($commentId)
 		}
 	}
 	mysqli_close($link);
+}*/
+
+//getter za naslov
+function getNaslov($commentId)
+{
+	$retVal = 'error';
+	$link = connectToDB();
+	if($link)
+	{
+		$query = "SELECT naslov FROM komentar WHERE id_komentar='".$commentId."';";
+		$result = mysqli_query($link, $query);
+		if($result)
+		{
+			while($row = mysqli_fetch_array($result))
+			{
+				$retVal = $row['naslov'];
+			}
+		}
+		mysqli_close($link);
+	}
+	return $retVal;
 }
 
+//getter za sadrzaj
+function getSadrzaj($commentId)
+{
+	$retVal = 'error';
+	$link = connectToDB();
+	if($link)
+	{
+		$query = "SELECT sadrzaj FROM komentar WHERE id_komentar='".$commentId."';";
+		$result = mysqli_query($link, $query);
+		if($result)
+		{
+			while($row = mysqli_fetch_array($result))
+			{
+				$retVal = $row['sadrzaj'];
+			}
+		}
+	}
+	mysqli_close($link);
+	return $retVal;	
+}
+
+//edits selected comment, returns true/false
+function editComment($commentId, $userId, $naslov, $sadrzaj)
+{
+	$retVal = false;
+	$link = connectToDB();
+	if($link)
+	{	
+		date_default_timezone_set('Europe/Zagreb');
+		$query = "UPDATE komentar SET naslov='".$naslov."', sadrzaj='".$sadrzaj."', vrijeme='".date('Y-m-d H:i:s')."' WHERE id_komentar='".$commentId."';";
+		$result = mysqli_query($link, $query);
+		if($result)
+		{
+			$retVal = true;
+		}
+		mysqli_close($link);
+	}
+	return $retVal;
+}
 ?>

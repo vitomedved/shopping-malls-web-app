@@ -8,82 +8,60 @@ session_start();
 $ime = '';
 $ocjena = 0;
 
-//Provjerava ako je id ducana unesen i ako je ispravan, tj. ako postoji i odmah uzima ime ducana van
+//ako nije postavljen id ducana, preusmjeri na index
 if(isset($_GET['id']) == false)
 {
 	header("Location: /RWA_ducani/index.php");
 }
+//ako je postavljen index ducana, provjeri ako taj id postoji u bazi
 else
 {
 	$ducanId = $_GET['id'];
-	
-	$link = connectToDB();
-	$query = "SELECT * FROM ducan";
-	$result = mysqli_query($link, $query);
-	if($result)
+	$exist = doesDucanExist($_GET['id']);
+	if(!$exist)
 	{
-		$exist = false;
-		while($row = mysqli_fetch_array($result))
-		{
-			if($row['id_ducan'] == $ducanId)
-			{
-				$GLOBALS['ime'] = $row['ime'];
-				$exist = true;
-				break;
-			}
-		}
-		if(!$exist)
-		{
-			header("Location: /RWA_ducani/index.php");
-		}
+		header("Location: /RWA_ducani/index.php");
 	}
 }
+
+//ako smo tu ducan postoji pa parsiraj njegovo ime
+$ime = getDucanName($_GET['id']);
 
 
 //sprema ocjenu korisnika za odredeni ducan ili ako je vec glasao, updejta mu ocjenu
 if(isset($_POST['ocjena']))
 {
-	$canRate = checkRating($_SESSION['userId']);
+	$canRate = ratedOnThisStore($_SESSION['userId'], $_GET['id']);
 	$novaOcjena = $_POST['ocjena'];
-	$link = connectToDB();
-	if($link)
+	$updated = false;
+	$added = false;
+	
+	if($canRate)
 	{
-		if($canRate)
-		{
-			$query = "INSERT INTO `ocjena` (`id_ocjena`, `vrijednost`, `id_ducan`, `id_korisnik`) VALUES (NULL, '".$novaOcjena."', '".$_GET['id']."', '".$_SESSION['userId']."');";
-			$result = mysqli_query($link, $query);
-			if(!$result)
-			{
-				echo("not rated");
-			}
-			else
-			{
-				header("Location: /RWA_ducani/ducan.php?id=".$_GET['id']);
-			}
-		}
-		else
-			//inace znaci da je vec ocjenio pa updejtaj vrijednost
-		{
-			$query = "UPDATE ocjena SET vrijednost='".$novaOcjena."' WHERE id_korisnik='".$_SESSION['userId']."';";
-			$result = mysqli_query($link, $query);
-			if(!$result)
-			{
-				echo("not rated");
-			}
-			echo("Nova ocjena spremljena");
-		}
-		
+		//Dodaje rating (userId, ducanId, $ocjena)
+		$added = newRating($_SESSION['userId'], $_GET['id'], $novaOcjena);
 	}
-	mysqli_close($link);
+	else
+		//inace znaci da je vec ocjenio pa updejtaj vrijednost
+	{
+		$updated = updateRating($_SESSION['userId'], $_GET['id'], $novaOcjena);
+	}
+	
+	//ako je ocjena dodana ili updejtana, preusmjeri na stranicu ducana
+	if($added || $updated)
+	{
+		header("Location: /RWA_ducani/ducan.php?id=".$_GET['id']);
+	}
 }
 
-//izracunava vrijednost ocjene i sprema tu vrijednost u $ocjena varijablu preko $GLOBALS['ocjena']
-getRating();
+$ocjena = getRating();
 
 
 //sprema komentar u bazu
 if(isset($_POST['sadrzaj']))
 {
+	$commentAdded = false;
+	$sadrzaj = $_POST['sadrzaj'];
 	if(isset($_POST['naslov']))
 	{
 		$naslov = $_POST['naslov'];
@@ -92,22 +70,19 @@ if(isset($_POST['sadrzaj']))
 	{
 		$naslov = '';
 	}
-	$sadrzaj = $_POST['sadrzaj'];
 	
-	$link = connectToDB();
-	if($link)
+	$commentAdded = addComment($_SESSION['userId'], $_GET['id'], $naslov, $sadrzaj);
+	if($commentAdded)
 	{
-		$query = "INSERT INTO `komentar` (`id_komentar`, `naslov`, `sadrzaj`, `id_korisnik`, `id_ducan`) VALUES (NULL, '".$naslov."', '".$sadrzaj."', '".$_SESSION['userId']."', '".$_GET['id']."');";
-		$result = mysqli_query($link, $query);
-		if(!$result)
-		{
-			echo("Komentar nije dodan, idk why");
-		}
+		header("Location: /RWA_ducani/ducan.php?id=".$_GET['id']);
 	}
-	
-	mysqli_close($link);
-	header("Location: /RWA_ducani/ducan.php?id=".$_GET['id']);
+	else
+	{
+		echo("Ne mogu dodati komentar, linija 81, ducan.php");
+	}
 }
+
+
 
 ?>
 
@@ -132,7 +107,7 @@ if(isset($_POST['sadrzaj']))
 
 <?php
 
-listComments();
+listComments($_GET['id']);
 
 ?>
 
@@ -149,15 +124,16 @@ listComments();
 
 <?php
 
-//uzima iz baze prosjecni rejting za ducan
+//vraca prosjecnu ocjenu ducana. ako je greska vratit ce -1 (ili 0?)
 function getRating()
 {
-	$sumaOcjena = 0.0;
+	$sumaOcjena = 0;
 	$count = 0.0;
-	
-	$query = "SELECT vrijednost FROM ocjena WHERE id_ducan=".$_GET['id'].";";
+	$retVal = -1;
 	
 	$link = connectToDB();
+	
+	$query = "SELECT vrijednost FROM ocjena WHERE id_ducan=".$_GET['id'].";";
 	
 	if($link)
 	{
@@ -173,20 +149,22 @@ function getRating()
 		
 		if($count > 0)
 		{
-			$GLOBALS['ocjena'] = round(($sumaOcjena / $count), 2);
+			$retVal = round(($sumaOcjena / $count), 2);
 		}
 		else
 		{
-			$GLOBALS['ocjena'] = 0;
+			$retVal = 0;
 		}
 	}
 	mysqli_close($link);
+	return $retVal;
 }
 
-//Provjerava ako je korisnik već glasao na ovaj dućan
-function checkRating($userId)
+//Provjerava ako je korisnik već glasao na odredeni ducan
+//vraca true/false
+function ratedOnThisStore($userId, $ducanId)
 {
-	$query = "SELECT id_korisnik FROM ocjena WHERE id_ducan=".$_GET['id'].";";
+	$query = "SELECT id_korisnik FROM ocjena WHERE id_ducan=".$ducanId.";";
 	$retVal = true;
 	$link = connectToDB();
 	
@@ -209,12 +187,118 @@ function checkRating($userId)
 	return $retVal;
 }
 
-function listComments()
+//Getter za ime ducana
+function getDucanName($ducanId)
+{
+	$link = connectToDB();
+	$query = "SELECT ime, id_ducan FROM ducan";
+	$result = mysqli_query($link, $query);
+	if($result)
+	{
+		while($row = mysqli_fetch_array($result))
+		{
+			if($row['id_ducan'] == $ducanId)
+			{
+				$ime = $row['ime'];
+				mysqli_close($link);
+				return $ime;
+			}
+		}
+	}
+	mysqli_close($link);
+	return 'Greska u trazenju imena: linija 45, ducan.php';
+}
+
+//Provjerava postoji li ducan s tim id-om u bazi
+//vraca true/false
+function doesDucanExist($ducanId)
+{
+	$link = connectToDB();
+	$query = "SELECT id_ducan FROM ducan";
+	$result = mysqli_query($link, $query);
+	if($result)
+	{
+		while($row = mysqli_fetch_array($result))
+		{
+			if($row['id_ducan'] == $ducanId)
+			{
+				mysqli_close($link);
+				return true;
+			}
+		}
+	}
+	mysqli_close($link);
+	return false;
+}
+
+//updejta novu ocjenu korisnika u bazu
+function updateRating($userId, $ducanId, $ocjena)
 {
 	$link = connectToDB();
 	if($link)
 	{
-		$query = "SELECT * FROM komentar NATURAL JOIN podatak";
+		$query = "UPDATE ocjena SET vrijednost='".$ocjena."' WHERE id_korisnik='".$userId."' AND id_ducan='".$ducanId."';";
+		$result = mysqli_query($link, $query);
+		if(!$result)
+		{
+			echo("not rated");
+			mysqli_close($link);
+			return false;
+		}
+		mysqli_close($link);
+		echo("Nova ocjena spremljena");
+		return true;
+	}
+	return false;
+}
+
+//dodaje ocjenu korisnika za ducan u bazu
+function newRating($userId, $ducanId, $ocjena)
+{
+	$link = connectToDB();
+	if($link)
+	{
+		$query = "INSERT INTO `ocjena` (`id_ocjena`, `vrijednost`, `id_ducan`, `id_korisnik`) VALUES (NULL, '".$ocjena."', '".$ducanId."', '".$userId."');";
+		$result = mysqli_query($link, $query);
+		if(!$result)
+		{
+			echo("not rated");
+			return false;
+		}
+		else
+		{
+			return true;
+		}		
+	}
+	return false;
+}
+
+//dodaje uneseni komentar u bazu
+function addComment($userId, $ducanId, $naslov, $sadrzaj)
+{
+	$retVal = false;
+	$link = connectToDB();
+	if($link)
+	{
+		$query = "INSERT INTO `komentar` (`id_komentar`, `naslov`, `sadrzaj`, `id_korisnik`, `id_ducan`) VALUES (NULL, '".$naslov."', '".$sadrzaj."', '".$_SESSION['userId']."', '".$_GET['id']."');";
+		$result = mysqli_query($link, $query);
+		if($result)
+		{
+			echo("Komentar dodan");
+			$retVal = true;
+		}
+	}
+	mysqli_close($link);
+	return $retVal;
+}
+
+//izlista sve komentare trenutnog ducana
+function listComments($ducanId)
+{
+	$link = connectToDB();
+	if($link)
+	{
+		$query = "SELECT ime, prezime, vrijeme, komentar.id_korisnik, naslov, sadrzaj, id_komentar FROM komentar LEFT JOIN podatak ON (komentar.id_korisnik = podatak.id_korisnik) WHERE id_ducan='".$ducanId."'";
 		$result = mysqli_query($link, $query);
 		if($result)
 		{
@@ -224,11 +308,23 @@ function listComments()
 				<div>".$row['naslov']."<br>".$row['sadrzaj']."</div><br>");
 				if(isset($_SESSION['loggedIn']) && ($_SESSION['loggedIn'] == true))
 				{
-					if(isAdmin() || ($row['id_korisnik'] == $_SESSION['userId']))
+					if(isAdmin($_SESSION['userId']) && ($row['id_korisnik'] == $_SESSION['userId']))
 					{
-						echo("<a href='editComment.php?commentId=".$row['id_komentar']."&ducanId=".$_GET['id']."'>EDIT</a> | <a href='removeComment.php?commentId=".$row['id_komentar']."&ducanId=".$_GET['id']."'>REMOVE</a><br><hr><br>");
+						//admin sam i moj je komentar
+						echo("<a href='removeComment.php?commentId=".$row['id_komentar']."&ducanId=".$_GET['id']."'>REMOVE</a> | <a href='editComment.php?commentId=".$row['id_komentar']."&ducanId=".$_GET['id']."'>EDIT</a>");
+					}
+					else if(isAdmin($_SESSION['userId']))
+						//admin, a nije moj komentar
+					{
+						echo("<a href='editComment.php?commentId=".$row['id_komentar']."&ducanId=".$_GET['id']."'>EDIT</a>");
+					}
+					else if(($row['id_korisnik'] == $_SESSION['userId']))
+						//moj komentar, a nisam admin
+					{
+						echo("<a href='removeComment.php?commentId=".$row['id_komentar']."&ducanId=".$_GET['id']."'>REMOVE</a> | <a href='editComment.php?commentId=".$row['id_komentar']."&ducanId=".$_GET['id']."'>EDIT</a>");
 					}
 				}
+				echo("<br><hr><br>");
 				
 			}
 		}
@@ -236,13 +332,5 @@ function listComments()
 	mysqli_close($link);
 }
 
-function isGuest()
-{
-	if(!isset($_SESSION['loggedIn']) || ($_SESSION['loggedIn'] == false))
-	{
-		return true;
-	}
-	return false;
-}
 
 ?>

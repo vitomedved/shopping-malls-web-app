@@ -1,19 +1,36 @@
 <?php
 
 include 'connectionToDB.php';
+include 'userFunctions.php';
+include 'komentarFunctions.php';
 
 session_start();
 
 
 
-if(!isset($_SESSION['loggedIn']) || ($_SESSION['loggedIn'] != true) || !isset($_GET['commentId']) || !isset($_GET['ducanId']))
+if(isGuest() || !isset($_GET['commentId']) || !isset($_GET['ducanId']))
 {
 	header("Location: /RWA_ducani/error.php");
 }
 
-$ducanId = checkUserGetDucanId($_GET['commentId'], $_SESSION['userId']);
+$isOwner = validateOwnership($_GET['commentId'], $_SESSION['userId']);
 
-deleteComment();
+if(!$isOwner)
+{
+	if(!isAdmin($_SESSION['userId']))
+	{
+		header("Location: /RWA_ducani/error.php");		
+	}
+}
+
+$ducanId = $_GET['ducanId'];
+
+$deleted = deleteComment($ducanId, $_GET['commentId']);
+
+if($deleted)
+{
+	header("Location: /RWA_ducani/ducan.php?id=".$_GET['ducanId']);
+}
 
 ?>
 
@@ -21,27 +38,32 @@ deleteComment();
 
 <?php
 
-function deleteComment()
+function deleteComment($ducanId, $commentId)
 {
+	$retVal = false;
 	$link = connectToDB();
 	if($link)
 	{
-		$query = "DELETE FROM `komentar` WHERE `komentar`.`id_komentar`=".$_GET['commentId'];
+		$query = "DELETE FROM `komentar` WHERE `komentar`.`id_komentar`=".$commentId;
 		$result = mysqli_query($link, $query);
-		if(!$result)
+		if($result)
 		{
-			header("Location: /RWA_ducani/error.php");
-		}
-		else
-		{
+			
+			//header("Location: /RWA_ducani/error.php");
 			if (mysqli_affected_rows($link) > 0)
 			{
-				header("Location: /RWA_ducani/ducan.php?id=".$ducanId);
+				$retVal = true;
+				//header("Location: /RWA_ducani/ducan.php?id=".$ducanId);
 			}		
 		}
+		//else
+		//{
+		//}
+		mysqli_close($link);
 	}
+	return $retVal;
 	
-	header("Location: /RWA_ducani/error.php");
+	//header("Location: /RWA_ducani/error.php");
 }
 
 ?>

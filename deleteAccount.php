@@ -12,7 +12,7 @@ if(!$link)
 }
 else
 {
-	$query = "DELETE FROM `korisnik` WHERE `korisnik`.`id_korisnik` = ".$_SESSION['userId']."";
+	$query = "DELETE FROM korisnik WHERE id_korisnik=".$_SESSION['userId'];
 	$result = mysqli_query($link, $query);
 	if(!$result)
 	{
@@ -20,13 +20,12 @@ else
 	}
 	else
 	{
+		mysqli_close($link);
 		echo("Account deleted, gg wp");
-		session_unset();
-		session_destroy();
+		header("Location: /RWA_ducani/logout.php");
 	}
 	mysqli_close($link);
 }
 
-header("Location: /RWA_ducani/index.php");
 
 ?>

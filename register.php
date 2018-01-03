@@ -9,10 +9,10 @@ session_start();
 
 $email = '';
 
-if(isset($_POST['email']))
+/*if(isset($_POST['email']))
 {
 	$email = $_POST['email'];
-}
+}*/
 
 ?>
 
@@ -29,8 +29,7 @@ if(isset($_POST['email']))
 if(isset($_POST['email']) && isset($_POST['password']) && isset($_POST['repeat_password']))
 {
 	$email = $_POST['email'];
-	$good_pw = check_pw($_POST['password'], $_POST['repeat_password']);
-	if($good_pw)
+	if($_POST['password'] == $_POST['repeat_password'])
 	{
 		$link = connectToDB();
 		if($link)
@@ -40,7 +39,7 @@ if(isset($_POST['email']) && isset($_POST['password']) && isset($_POST['repeat_p
 		}
 		else
 		{
-			echo('Can\'t connect to database.');
+			echo("Can't connect to database.");
 		}
 	}
 	else
@@ -50,14 +49,14 @@ if(isset($_POST['email']) && isset($_POST['password']) && isset($_POST['repeat_p
 }
 
 
-function check_pw($pw1, $pw2)
+/*function check_pw($pw1, $pw2)
 {
 	if($pw1 == $pw2)
 	{
 		return true;
 	}
 	return false;
-}
+}*/
 
 function register($link, $email, $pw)
 {
@@ -74,6 +73,7 @@ function register($link, $email, $pw)
 			if($row['email'] == $email)
 			{
 				echo('This email is already registered.');
+				mysqli_close($link);
 				return false;
 			}
 		}
@@ -91,10 +91,13 @@ function register($link, $email, $pw)
 		//TODO: these 4 lines below are the same as 4 lines when user is logged in
 		$_SESSION['loggedIn'] = true;
 		$_SESSION['email'] = $_POST['email'];
-		$_SESSION['userId'] = getUserId();
+		$_SESSION['userId'] = getUserId($_SESSION['email']);
 		arhivirajLogin($_SESSION['userId']);
+		mysqli_close($link);
 		header("Location: /RWA_ducani/index.php");
 	}
+	mysqli_close($link);
+	return false;
 }
 
 ?>
