@@ -298,7 +298,7 @@ function listComments($ducanId)
 	$link = connectToDB();
 	if($link)
 	{
-		$query = "SELECT ime, prezime, vrijeme, komentar.id_korisnik, naslov, sadrzaj, id_komentar FROM komentar LEFT JOIN podatak ON (komentar.id_korisnik = podatak.id_korisnik) WHERE id_ducan='".$ducanId."'";
+		$query = "SELECT ime, prezime, UNIX_TIMESTAMP(vrijeme) as timestamp, vrijeme, komentar.id_korisnik, naslov, sadrzaj, id_komentar FROM komentar LEFT JOIN podatak ON (komentar.id_korisnik = podatak.id_korisnik) WHERE id_ducan='".$ducanId."' ORDER BY timestamp DESC";
 		$result = mysqli_query($link, $query);
 		if($result)
 		{

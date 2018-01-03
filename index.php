@@ -35,6 +35,29 @@
 		echo("<a href='login.php'> LOGIN </a> or <a href='register.php'>REGISTER</a>");
 	}
 	
+	//GETS 4 TOP RATED STORES IDs
+	$topRatedStores = getTopRatedStoreIDs();
+	
+	function getTopRatedStoreIDs()
+	{
+		$retArray = array();
+		
+		$link = connectToDB();
+		if($link)
+		{
+			$query = "SELECT SUM(vrijednost)/COUNT(vrijednost) as prosjek, id_ducan FROM ocjena GROUP BY id_ducan ORDER BY prosjek DESC LIMIT 4";
+			$result = mysqli_query($link, $query);
+			if($result)
+			{
+				while($row = mysqli_fetch_array($result))
+				{
+					$retArray[] = $row['id_ducan'];
+				}
+			}
+		}
+		return $retArray;
+	}
+	
     ?>
 	
         <header class="jumbotron">
@@ -59,7 +82,7 @@
                         <h4>Ime dućana</h4>
                     </div>
                     <p>
-                        <a href="ducan.php?id=1" class="btn btn-primary">Pogledaj komentare</a>
+                        <a href="ducan.php?id=<?php echo $topRatedStores[0]; ?>" class="btn btn-primary">Pogledaj komentare</a>
                     </p>
                 </div>
             </div>
@@ -70,7 +93,7 @@
                         <h4>Ime dućana</h4>
                     </div>
                     <p>
-                        <a href="#" class="btn btn-primary">Pogledaj komentare</a>
+                        <a href="ducan.php?id=<?php echo $topRatedStores[1]; ?>" class="btn btn-primary">Pogledaj komentare</a>
                     </p>
                 </div>
             </div>
@@ -81,7 +104,7 @@
                         <h4>Ime dućana</h4>
                     </div>
                     <p>
-                        <a href="#" class="btn btn-primary">Pogledaj komentare</a>
+                        <a href="ducan.php?id=<?php echo $topRatedStores[2]; ?>" class="btn btn-primary">Pogledaj komentare</a>
                     </p>
                 </div>
             </div>
@@ -92,7 +115,7 @@
                         <h4>Ime dućana</h4>
                     </div>
                     <p>
-                        <a href="#" class="btn btn-primary">Pogledaj komentare</a>
+                        <a href="ducan.php?id=<?php echo $topRatedStores[3]; ?>" class="btn btn-primary">Pogledaj komentare</a>
                     </p>
                 </div>
             </div>
