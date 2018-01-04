@@ -13,6 +13,7 @@
     
     //include "menu.html";
 	include 'userFunctions.php';
+	include 'ducanFunctions.php';
 	
 	session_start();
 	
@@ -45,13 +46,14 @@
 		$link = connectToDB();
 		if($link)
 		{
-			$query = "SELECT SUM(vrijednost)/COUNT(vrijednost) as prosjek, id_ducan FROM ocjena GROUP BY id_ducan ORDER BY prosjek DESC LIMIT 4";
+			$query = "SELECT id_ducan, ime, tip_ducana, vrsta_ducana, IFNULL(SUM(vrijednost)/COUNT(vrijednost), 0) as prosjek FROM ducan LEFT JOIN ocjena USING (id_ducan) GROUP BY id_ducan ORDER BY prosjek DESC LIMIT 4";
 			$result = mysqli_query($link, $query);
 			if($result)
 			{
 				while($row = mysqli_fetch_array($result))
 				{
-					$retArray[] = $row['id_ducan'];
+					$retArray[] = new ducan($row['id_ducan'], $row['ime'], $row['tip_ducana'], $row['vrsta_ducana'], $row['prosjek']);
+					echo "asd";
 				}
 			}
 		}
@@ -65,7 +67,7 @@
                 <h1>Dobrodošli, ocjenite dućan!</h1>
                 <p>Pregledaj dućane</p>
                 <p>
-                    <a class="btn btn-lg btn-primary" href="ducani.php">Pretraži sve dućane</a>
+                    <a class="btn btn-lg btn-primary" href="sviDucani.php">Pretraži sve dućane</a>
                 </p>
             </div>
         </header>
@@ -75,51 +77,24 @@
         </div>
 
         <div class="row text-center" style="display:flex; flex-wrap: wrap;">
-            <div class="col-md-3 col-sm-6">
-                <div class="card">
-                    <img class="img-fluid" src="http://static.panoramio.com/photos/large/23030867.jpg">
-                    <div class="caption">
-                        <h4>Ime dućana</h4>
+            <?php
+			
+			foreach($topRatedStores as $ducan)
+			{
+				echo "<div class=\"col-md-3 col-sm-6\">
+                <div class=\"card\">
+                    <img class=\"img-fluid\" src=\"http://static.panoramio.com/photos/large/23030867.jpg\">
+                    <div class=\"caption\">
+                        <h5>Ime dućana: ".$ducan->ime.", ocjena: ".$ducan->ocjena."</h4>
                     </div>
                     <p>
-                        <a href="ducan.php?id=<?php echo $topRatedStores[0]; ?>" class="btn btn-primary">Pogledaj komentare</a>
+                        <a href=\"ducan.php?id=".$ducan->id."\" class=\"btn btn-primary\">Pogledaj komentare</a>
                     </p>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="card">
-                    <img class="img-fluid" src="http://static.panoramio.com/photos/large/23030867.jpg">
-                    <div class="caption">
-                        <h4>Ime dućana</h4>
-                    </div>
-                    <p>
-                        <a href="ducan.php?id=<?php echo $topRatedStores[1]; ?>" class="btn btn-primary">Pogledaj komentare</a>
-                    </p>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="card">
-                    <img class="img-fluid" src="http://static.panoramio.com/photos/large/23030867.jpg">
-                    <div class="caption">
-                        <h4>Ime dućana</h4>
-                    </div>
-                    <p>
-                        <a href="ducan.php?id=<?php echo $topRatedStores[2]; ?>" class="btn btn-primary">Pogledaj komentare</a>
-                    </p>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="card">
-                    <img class="img-fluid" src="http://static.panoramio.com/photos/large/23030867.jpg">
-                    <div class="caption">
-                        <h4>Ime dućana</h4>
-                    </div>
-                    <p>
-                        <a href="ducan.php?id=<?php echo $topRatedStores[3]; ?>" class="btn btn-primary">Pogledaj komentare</a>
-                    </p>
-                </div>
-            </div>
-
+					</div>
+				</div>";
+			}
+			
+			?>
         </div>
     </div>
 
