@@ -10,21 +10,21 @@
 <body>
     <div class="container">
     <?php
-    
-    //include "menu.html";
-	include 'userFunctions.php';
-	include 'ducanFunctions.php';
+    include_once 'userClass.php';
+	include_once 'userFunctions.php';
+	include_once 'ducanFunctions.php';
 	
-	session_start();
+	//session_start();
 	
 	if(isset($_SESSION['loggedIn']) && ($_SESSION['loggedIn'] == true))
 	{
 		echo("<a href='logout.php'>LOGOUT</a> or <a href='deleteAccount.php'>DELETE ACCOUNT</a>");
-		echo("<br>Your email is: ".$_SESSION['email'].", and id: ".$_SESSION['userId']);
+		echo("<br>Your email is: ".$_SESSION['user']->email.", and id: ".$_SESSION['user']->id);
 		echo("<br><a href='podatak.php'> Click here to hange your data</a><br>");
-		if(isAdmin($_SESSION['userId']))
+		if($_SESSION['user']->razinaOvlasti)
 		{
 			echo("Vi ste admin, <a href='dodajDucan.php'>dodaj dućan</a><br>");
+			
 		}
 		else
 		{
@@ -53,7 +53,6 @@
 				while($row = mysqli_fetch_array($result))
 				{
 					$retArray[] = new ducan($row['id_ducan'], $row['ime'], $row['tip_ducana'], $row['vrsta_ducana'], $row['prosjek']);
-					echo "asd";
 				}
 			}
 		}

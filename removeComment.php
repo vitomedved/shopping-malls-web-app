@@ -1,8 +1,9 @@
 <?php
 
-include 'connectionToDB.php';
-include 'userFunctions.php';
-include 'komentarFunctions.php';
+include_once 'userClass.php';
+include_once 'connectionToDB.php';
+include_once 'userFunctions.php';
+include_once 'komentarFunctions.php';
 
 session_start();
 
@@ -13,11 +14,11 @@ if(isGuest() || !isset($_GET['commentId']) || !isset($_GET['ducanId']))
 	header("Location: /RWA_ducani/error.php");
 }
 
-$isOwner = validateOwnership($_GET['commentId'], $_SESSION['userId']);
+$isOwner = validateOwnership($_GET['commentId'], $_SESSION['user']->id);
 
 if(!$isOwner)
 {
-	if(!isAdmin($_SESSION['userId']))
+	if($_SESSION['user']->razinaOvlasti == 0)
 	{
 		header("Location: /RWA_ducani/error.php");		
 	}

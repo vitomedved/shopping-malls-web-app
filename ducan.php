@@ -1,10 +1,14 @@
 <?php
 
-include 'connectionToDB.php';
-include 'userFunctions.php';
-include 'ducanFunctions.php';
+include_once 'userClass.php';
+include_once 'connectionToDB.php';
+include_once 'userFunctions.php';
+include_once 'ducanFunctions.php';
 
-session_start();
+if (session_status() == PHP_SESSION_NONE)
+{
+    session_start();
+}
 
 $ime = '';
 $ocjena = 0;
@@ -32,7 +36,7 @@ $ime = getDucanName($_GET['id']);
 //sprema ocjenu korisnika za odredeni ducan ili ako je vec glasao, updejta mu ocjenu
 if(isset($_POST['ocjena']))
 {
-	$canRate = ratedOnThisStore($_SESSION['userId'], $_GET['id']);
+	$canRate = ratedOnThisStore($_SESSION['user']->id, $_GET['id']);
 	$novaOcjena = $_POST['ocjena'];
 	$updated = false;
 	$added = false;
@@ -40,12 +44,12 @@ if(isset($_POST['ocjena']))
 	if($canRate)
 	{
 		//Dodaje rating (userId, ducanId, $ocjena)
-		$added = newRating($_SESSION['userId'], $_GET['id'], $novaOcjena);
+		$added = newRating($_SESSION['user']->id, $_GET['id'], $novaOcjena);
 	}
 	else
 		//inace znaci da je vec ocjenio pa updejtaj vrijednost
 	{
-		$updated = updateRating($_SESSION['userId'], $_GET['id'], $novaOcjena);
+		$updated = updateRating($_SESSION['user']->id, $_GET['id'], $novaOcjena);
 	}
 	
 	//ako je ocjena dodana ili updejtana, preusmjeri na stranicu ducana
@@ -72,7 +76,7 @@ if(isset($_POST['sadrzaj']))
 		$naslov = '';
 	}
 	
-	$commentAdded = addComment($_SESSION['userId'], $_GET['id'], $naslov, $sadrzaj);
+	$commentAdded = addComment($_SESSION['user']->id, $_GET['id'], $naslov, $sadrzaj);
 	if($commentAdded)
 	{
 		header("Location: /RWA_ducani/ducan.php?id=".$_GET['id']);

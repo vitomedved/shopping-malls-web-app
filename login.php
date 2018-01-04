@@ -1,5 +1,11 @@
 <?php
-session_start();
+
+include_once 'userClass.php';
+
+if (session_status() == PHP_SESSION_NONE)
+{
+    session_start();
+}
 
 if(isset($_SESSION['loggedIn']) && ($_SESSION['loggedIn'] == true))
 {
@@ -27,58 +33,51 @@ include_once 'connectionToDB.php';
 include_once 'userFunctions.php';
 include_once 'arhivaLogiranja.php';
 
-$link = connectToDB();
-
-if($link == false)
+if(isset($_POST['email']) && isset($_POST['password']))
 {
-	echo("Can't connect to DB.");
-}
-else
-{
-	if(isset($_POST['email']) && isset($_POST['password']))
+	$loggedIn = checkCredentials($_POST['email'], $_POST['password']);
+	if($loggedIn == true)
 	{
-		$loggedIn = checkCredentials($link, $_POST['email'], $_POST['password']);
-		if($loggedIn == true)
-		{
-			echo("Uspješno logiranje!");
-			//TODO: these 4 lines below are the same as 4 lines when user is registered
-			$_SESSION['loggedIn'] = true;
-			$_SESSION['email'] = $_POST['email'];
-			$_SESSION['userId'] = getUserId($_SESSION['email']);
-			arhivirajLogin($_SESSION['userId']);
-			header("Location: /RWA_ducani/index.php");
-		}
-		else
-		{
-			echo("Email i odgovarajuća šifa se ne podudaraju");
-		}
-	}
-}
-mysqli_close($link);
-
-
-function checkCredentials($link, $email, $pw)
-{
-	$query = 'SELECT email, password FROM korisnik';
-	$result = mysqli_query($link, $query);
-	if(!$result)
-	{
-		echo("Upit nije dobar.");
+		echo("Uspješno logiranje!");
+		//TODO: these 4 lines below are the same as 4 lines when user is registered
+		//$_SESSION['loggedIn'] = true;
+		//$_SESSION['email'] = $_POST['email'];
+		//$_SESSION['userId'] = getUserId($_SESSION['email']);
+		//arhivirajLogin($_SESSION['userId']);
+		logIn($_POST['email']);
+		header("Location: /RWA_ducani/index.php");
 	}
 	else
 	{
-		while($row = mysqli_fetch_array($result))
+		echo("Email i odgovarajuća šifa se ne podudaraju");
+	}
+}
+
+
+function checkCredentials($email, $pw)
+{
+	$retVal = false;
+	$link = connectToDB();
+	if($link)
+	{
+		$query = "SELECT email, password FROM korisnik WHERE email='".$email."';";
+		$result = mysqli_query($link, $query);
+		if($result)
 		{
-			if($row['email'] == $email)
+			while($row = mysqli_fetch_array($result))
 			{
-				if($row['password'] == $pw)
-				{
-					return true;
-				}
-				return false;
+				//if($row['email'] == $email)
+				//{
+					if($row['password'] == $pw)
+					{
+						$retVal = true;
+					}
+				//}
 			}
 		}
+		mysqli_close($link);
 	}
+	return $retVal;
 }
 
 ?>

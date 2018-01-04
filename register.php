@@ -3,16 +3,15 @@
 include_once 'connectionToDB.php';
 include_once 'arhivaLogiranja.php';
 include_once 'userFunctions.php';
+//include 'login.php';
 
 
-session_start();
+if (session_status() == PHP_SESSION_NONE)
+{
+    session_start();
+}
 
 $email = '';
-
-/*if(isset($_POST['email']))
-{
-	$email = $_POST['email'];
-}*/
 
 ?>
 
@@ -31,15 +30,19 @@ if(isset($_POST['email']) && isset($_POST['password']) && isset($_POST['repeat_p
 	$email = $_POST['email'];
 	if($_POST['password'] == $_POST['repeat_password'])
 	{
-		$link = connectToDB();
-		if($link)
+		$registered = userExist($_POST['email'], $_POST['password']);
+		if($registered)
 		{
-			$registered = register($link, $_POST['email'], $_POST['password']);
-			mysqli_close($link);
+			echo('This email is already registered.');
 		}
 		else
 		{
-			echo("Can't connect to database.");
+			if(newUser($_POST['email'], $_POST['password']))
+			{
+				header("Location: /RWA_ducani/index.php");
+			}
+			else
+				echo("Ne mogu te registrirati");
 		}
 	}
 	else
@@ -58,46 +61,45 @@ if(isset($_POST['email']) && isset($_POST['password']) && isset($_POST['repeat_p
 	return false;
 }*/
 
-function register($link, $email, $pw)
+function userExist($email, $pw)
 {
-	$query = 'SELECT email FROM korisnik';
-	$result = mysqli_query($link, $query);
-	if(!$result)
+	$ret = false;
+	$link = connectToDB();
+	if($link)
 	{
-		echo('error with query');
-	}
-	else
-	{
-		while($row = mysqli_fetch_array($result))
+		$query = 'SELECT email FROM korisnik';
+		$result = mysqli_query($link, $query);
+		if($result)
 		{
-			if($row['email'] == $email)
+			while($row = mysqli_fetch_array($result))
 			{
-				echo('This email is already registered.');
-				mysqli_close($link);
-				return false;
+				if($row['email'] == $email)
+				{
+					$ret = true;
+				}
 			}
 		}
-	}
-	$query = "INSERT INTO `korisnik` (`id_korisnik`, `email`, `password`, `razina_ovlasti`) VALUES (NULL, '".$email."', '".$pw."', 0);";
-	$result = mysqli_query($link, $query);
-	if(!$result)
-	{
-		echo('Error with registring');
-	}
-	else
-	{
-		//echo("Successfully registered, <a href='login.php'>log in</a>");
-		echo("Automatsko logiranje, bit ćete preusmjereni na početnu stranicu");
-		//TODO: these 4 lines below are the same as 4 lines when user is logged in
-		$_SESSION['loggedIn'] = true;
-		$_SESSION['email'] = $_POST['email'];
-		$_SESSION['userId'] = getUserId($_SESSION['email']);
-		arhivirajLogin($_SESSION['userId']);
 		mysqli_close($link);
-		header("Location: /RWA_ducani/index.php");
 	}
-	mysqli_close($link);
-	return false;
+	return $ret;
+}
+
+function newUser($email, $pw)
+{
+	$link = connectToDB();
+	if($link)
+	{
+		$query = "INSERT INTO `korisnik` (`id_korisnik`, `email`, `password`, `razina_ovlasti`) VALUES (NULL, '".$email."', '".$pw."', 0);";
+		$result = mysqli_query($link, $query);
+		if($result)
+		{
+			mysqli_close($link);
+			logIn($_POST['email']);
+			$ret = true;
+		}
+		mysqli_close($link);
+	}
+	return $ret;
 }
 
 ?>

@@ -1,9 +1,13 @@
 <?php 
 
-include 'connectionToDB.php';
-include 'userFunctions.php';
+include_once 'userClass.php';
+include_once 'connectionToDB.php';
+include_once 'userFunctions.php';
 
-session_start();
+if (session_status() == PHP_SESSION_NONE)
+{
+    session_start();
+}
 
 //samo ako je logiran moze tu
 if(isGuest())
@@ -11,20 +15,15 @@ if(isGuest())
 	header("Location: /RWA_ducani/index.php");
 }
 
-$ime = getIme($_SESSION['userId']);
-$prezime = getPrezime($_SESSION['userId']);
-$najDucan= getNajDucan($_SESSION['userId']);
+$_SESSION['user']->ime = getIme($_SESSION['user']->id);
+$_SESSION['user']->prezime = getPrezime($_SESSION['user']->id);
+$_SESSION['user']->najDucan = getNajDucan($_SESSION['user']->id);
 
-/*if(isset($_GET['imeKorisnika']) || isset($_GET['prezimeKorisnika']) || isset($_GET['najDucan']))
-{
-	spremiPodatke($_GET['imeKorisnika'], $_GET['prezimeKorisnika'], $_GET['najDucan']);
-}*/
-
-$podatakPostoji = podatakExists($_SESSION['userId']);
+$podatakPostoji = podatakExists($_SESSION['user']->id);
 
 if(!$podatakPostoji)
 {
-	$added = newPodatak($_SESSION['userId'], $ime, $prezime, $najDucan);
+	$added = newPodatak($_SESSION['user']->id, $_SESSION['user']->ime, $_SESSION['user']->prezime, $_SESSION['user']->ducan);
 	if($added)
 	{
 		header("Location: /RWA_ducani/podatak.php");
@@ -35,9 +34,11 @@ if(!$podatakPostoji)
 	}
 }
 
+
+
 if(isset($_GET['imeKorisnika']))
 {
-	$ret = updateIme($_SESSION['userId'], $_GET['imeKorisnika']);
+	$ret = updateIme($_SESSION['user']->id, $_GET['imeKorisnika']);
 	if($ret)
 	{
 		header("Location: /RWA_ducani/podatak.php");
@@ -48,7 +49,7 @@ if(isset($_GET['imeKorisnika']))
 
 if(isset($_GET['prezimeKorisnika']))
 {
-	$ret = updatePrezime($_SESSION['userId'], $_GET['prezimeKorisnika']);
+	$ret = updatePrezime($_SESSION['user']->id, $_GET['prezimeKorisnika']);
 	if($ret)
 	{
 		header("Location: /RWA_ducani/podatak.php");
@@ -58,7 +59,7 @@ if(isset($_GET['prezimeKorisnika']))
 
 if(isset($_GET['najDucan']))
 {
-	$ret = updateNajDucan($_SESSION['userId'], $_GET['najDucan']);
+	$ret = updateNajDucan($_SESSION['user']->id, $_GET['najDucan']);
 	if($ret)
 	{
 		header("Location: /RWA_ducani/podatak.php");
@@ -69,9 +70,9 @@ if(isset($_GET['najDucan']))
 ?>
 
 <form action='podatak.php' method='get'>
-	Ime: <input type='text' name='imeKorisnika' placeholder='Ime' value='<?php echo($ime) ?>'><br>
-	Prezime: <input type='text' name='prezimeKorisnika' placeholder='Prezime' value='<?php echo($prezime) ?>'><br>
-	Najdraži dućani: <input type='text' name='najDucan' placeholder='Najdraži dućan/i' value='<?php echo($najDucan) ?>'><br>
+	Ime: <input type='text' name='imeKorisnika' placeholder='Ime' value='<?php echo($_SESSION['user']->ime) ?>'><br>
+	Prezime: <input type='text' name='prezimeKorisnika' placeholder='Prezime' value='<?php echo $_SESSION['user']->prezime ?>'><br>
+	Najdraži dućani: <input type='text' name='najDucan' placeholder='Najdraži dućan/i' value='<?php echo $_SESSION['user']->najDucan ?>'><br>
 	<input type='submit'>
 </form>
 
@@ -151,6 +152,7 @@ function getNajDucan($userId)
 	return $retVal;
 }
 
+
 /*function spremiPodatke($ime, $prezime, $najDucan)
 {
 	$link = connectToDB();
@@ -193,7 +195,6 @@ function podatakExists($userId)
 		{
 			while($row = mysqli_fetch_array($result))
 			{
-				//echo($row['id_korisnik']);
 				$retVal = true;
 			}
 		}

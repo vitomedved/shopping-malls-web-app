@@ -1,9 +1,14 @@
 <?php
 
-session_start();
+include 'userClass.php';
+
+if (session_status() == PHP_SESSION_NONE)
+{
+    session_start();
+}
 
 include 'connectionToDB.php';
-include 'userFunctions.php';
+//include 'userFunctions.php';
 include 'ducanFunctions.php';
 
 $ducaniArray = getDucaniArray();
@@ -14,7 +19,7 @@ foreach($ducaniArray as $ducan)
 	echo "ime: ".$ducan->ime.", tip: ".$ducan->tip.", vrsta: ".$ducan->vrsta.", ocjena: ".$ducan->ocjena."<br>
 	<a href=''>Pogledaj dućan</a> | <a href='ducan.php?id=".$ducan->id."'>Pogledaj komentare</a>";
 	
-	if(isAdmin($_SESSION['userId']))
+	if($_SESSION['user']->razinaOvlasti == 1)
 	{
 		echo " | <a href=''>Uredi ducan</a>";
 	}

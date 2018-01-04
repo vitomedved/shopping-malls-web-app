@@ -36,39 +36,6 @@ function getRating($ducanId)
 	return $retVal;
 }
 
-//vraca sve ducane u polju objekata ducana
-function getDucaniArray()
-{
-	$link = connectToDB();
-	if($link)
-	{
-		$query = "SELECT * FROM ducan";
-		$result = mysqli_query($link, $query);
-		
-		$ret = array();
-		
-		if($result)
-		{
-			while($row = mysqli_fetch_array($result))
-			{
-				/*echo("
-				<div>
-					ime ducana: ".$row['ime']."<br>
-					tip ducana: ".$row['tip_ducana']."<br>
-					vrsta ducana: ".$row['vrsta_ducana']."<br>
-					".$GLOBALS['editOrShow']."
-					<br><hr>
-				</div>
-				");*/
-				$ret[] = new ducan($row['id_ducan'], $row['ime'], $row['tip_ducana'], $row['vrsta_ducana'], getRating($row['id_ducan']));
-			}
-			//echo("<a href='index.php'>Povratak na pocetnu</a>");
-		}
-		mysqli_close($link);
-		return $ret;
-	}
-}
-
 //Provjerava ako je korisnik već glasao na odredeni ducan
 //vraca true/false
 function ratedOnThisStore($userId, $ducanId)
@@ -189,7 +156,7 @@ function addComment($userId, $ducanId, $naslov, $sadrzaj)
 	$link = connectToDB();
 	if($link)
 	{
-		$query = "INSERT INTO `komentar` (`id_komentar`, `naslov`, `sadrzaj`, `id_korisnik`, `id_ducan`) VALUES (NULL, '".$naslov."', '".$sadrzaj."', '".$_SESSION['userId']."', '".$_GET['id']."');";
+		$query = "INSERT INTO `komentar` (`id_komentar`, `naslov`, `sadrzaj`, `id_korisnik`, `id_ducan`) VALUES (NULL, '".$naslov."', '".$sadrzaj."', '".$userId."', '".$_GET['id']."');";
 		$result = mysqli_query($link, $query);
 		if($result)
 		{
@@ -217,17 +184,17 @@ function listComments($ducanId)
 				<div>".$row['naslov']."<br>".$row['sadrzaj']."</div><br>");
 				if(isset($_SESSION['loggedIn']) && ($_SESSION['loggedIn'] == true))
 				{
-					if(isAdmin($_SESSION['userId']) && ($row['id_korisnik'] == $_SESSION['userId']))
+					if(($_SESSION['user']->razinaOvlasti == 1) && ($row['id_korisnik'] == $_SESSION['user']->id))
 					{
 						//admin sam i moj je komentar
 						echo("<a href='removeComment.php?commentId=".$row['id_komentar']."&ducanId=".$_GET['id']."'>REMOVE</a> | <a href='editComment.php?commentId=".$row['id_komentar']."&ducanId=".$_GET['id']."'>EDIT</a>");
 					}
-					else if(isAdmin($_SESSION['userId']))
+					else if($_SESSION['user']->razinaOvlasti == 1)
 						//admin, a nije moj komentar
 					{
-						echo("<a href='editComment.php?commentId=".$row['id_komentar']."&ducanId=".$_GET['id']."'>EDIT</a>");
+						echo("<a href='removeComment.php?commentId=".$row['id_komentar']."&ducanId=".$_GET['id']."'>REMOVE</a>");
 					}
-					else if(($row['id_korisnik'] == $_SESSION['userId']))
+					else if(($row['id_korisnik'] == $_SESSION['user']->id))
 						//moj komentar, a nisam admin
 					{
 						echo("<a href='removeComment.php?commentId=".$row['id_komentar']."&ducanId=".$_GET['id']."'>REMOVE</a> | <a href='editComment.php?commentId=".$row['id_komentar']."&ducanId=".$_GET['id']."'>EDIT</a>");
@@ -239,6 +206,39 @@ function listComments($ducanId)
 		}
 	}
 	mysqli_close($link);
+}
+
+//vraca sve ducane u polju objekata ducana
+function getDucaniArray()
+{
+	$link = connectToDB();
+	if($link)
+	{
+		$query = "SELECT * FROM ducan";
+		$result = mysqli_query($link, $query);
+		
+		$ret = array();
+		
+		if($result)
+		{
+			while($row = mysqli_fetch_array($result))
+			{
+				/*echo("
+				<div>
+					ime ducana: ".$row['ime']."<br>
+					tip ducana: ".$row['tip_ducana']."<br>
+					vrsta ducana: ".$row['vrsta_ducana']."<br>
+					".$GLOBALS['editOrShow']."
+					<br><hr>
+				</div>
+				");*/
+				$ret[] = new ducan($row['id_ducan'], $row['ime'], $row['tip_ducana'], $row['vrsta_ducana'], getRating($row['id_ducan']));
+			}
+			//echo("<a href='index.php'>Povratak na pocetnu</a>");
+		}
+		mysqli_close($link);
+		return $ret;
+	}
 }
 
 //klasa ducana

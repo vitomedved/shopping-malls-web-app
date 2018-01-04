@@ -1,6 +1,13 @@
 <?php
 
+include_once 'userClass.php';
 include_once 'connectionToDB.php';
+
+if (session_status() == PHP_SESSION_NONE)
+{
+    session_start();
+}
+
 
 //vraca userId prema e-mailu ili -2/-1 ako je error
 function getUserId($email)
@@ -55,6 +62,39 @@ function isGuest()
 		return true;
 	}
 	return false;
+}
+
+function getUser($email)
+{
+	$ret = new user();
+	$link = connectToDB();
+	if($link)
+	{
+		$query = "SELECT id_korisnik, email, razina_ovlasti, IFNULL(ime, 'Nije postavljeno') as ime, IFNULL(prezime, 'Nije postavljeno') as prezime, IFNULL(naj_ducan, 'Neodredeno') as najDucan FROM korisnik LEFT JOIN podatak USING (id_korisnik) WHERE email='".$email."';";
+		$result = mysqli_query($link, $query);
+		if($result)
+		{
+			while($row = mysqli_fetch_array($result))
+			{
+				//ret = new user($row['id'], $row['email'], $row['razinaOvlasti'], $row['ime'], $row['prezime'], $row['najDucan']);
+				$ret->id = $row['id_korisnik'];
+				$ret->email = $row['email'];
+				$ret->razinaOvlasti = $row['razina_ovlasti'];
+				$ret->ime = $row['ime'];
+				$ret->prezime = $row['prezime'];
+				$ret->najDucan = $row['najDucan'];
+			}
+		}
+	}
+	return $ret;
+}
+
+function logIn($email)
+{
+	$_SESSION['loggedIn'] = true;
+	$_SESSION['user'] = getUser($email);
+	echo $_SESSION['user']->id;
+	arhivirajLogin($_SESSION['user']->id);
 }
 
 ?>

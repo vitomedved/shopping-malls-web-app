@@ -1,6 +1,8 @@
 <?php
 
-include 'connectionToDB.php';
+include_once 'userClass.php';
+include_once 'connectionToDB.php';
+
 
 session_start();
 
@@ -12,7 +14,7 @@ if(!$link)
 }
 else
 {
-	$query = "DELETE FROM korisnik WHERE id_korisnik=".$_SESSION['userId'];
+	$query = "DELETE FROM korisnik WHERE id_korisnik=".$_SESSION['user']->id;
 	$result = mysqli_query($link, $query);
 	if(!$result)
 	{

@@ -1,13 +1,16 @@
 <?php
 
-//ime ocjena i tip
-//session_start();
-include 'connectionToDB.php';
-include 'userFunctions.php';
+include_once 'userClass.php';
+include_once 'connectionToDB.php';
+include_once 'userFunctions.php';
 
-session_start();
+if (session_status() == PHP_SESSION_NONE)
+{
+    session_start();
+}
 
-if(isAdmin($_SESSION['userId']) == false)
+//nije admin
+if($_SESSION['user']->razinaOvlasti == 0)
 {
 	header("Location: /RWA_ducani/index.php");
 }

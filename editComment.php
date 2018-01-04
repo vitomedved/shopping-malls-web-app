@@ -1,10 +1,14 @@
 <?php
 
-include 'connectionToDB.php';
-include 'komentarFunctions.php';
-include 'userFunctions.php';
+include_once 'userClass.php';
+include_once 'connectionToDB.php';
+include_once 'komentarFunctions.php';
+include_once 'userFunctions.php';
 
-session_start();
+if (session_status() == PHP_SESSION_NONE)
+{
+    session_start();
+}
 
 if(isGuest() || !isset($_GET['commentId']) || !isset($_GET['ducanId']))
 {
@@ -14,8 +18,7 @@ if(isGuest() || !isset($_GET['commentId']) || !isset($_GET['ducanId']))
 $ducanId = $_GET['ducanId'];
 $commentId = $_GET['commentId'];
 
-$isOwner = validateOwnership($commentId, $_SESSION['userId']);
-
+$isOwner = validateOwnership($commentId, $_SESSION['user']->id);
 if(!$isOwner)
 {
 	header("Location: /RWA_ducani/error.php");
@@ -39,7 +42,7 @@ if(isset($_POST['sadrzaj']))
 	}
 	$sadrzaj = $_POST['sadrzaj'];
 	
-	$edited = editComment($commentId, $_SESSION['userId'], $naslov, $sadrzaj);
+	$edited = editComment($commentId, $_SESSION['user']->id, $naslov, $sadrzaj);
 	if($edited)
 	{
 		header("Location: /RWA_ducani/ducan.php?id=".$_GET['ducanId']);
