@@ -32,6 +32,7 @@ if(isset($_POST['email']))
 include_once 'connectionToDB.php';
 include_once 'userFunctions.php';
 include_once 'arhivaLogiranja.php';
+include_once 'notifikacijaFunctions.php';
 
 if(isset($_POST['email']) && isset($_POST['password']))
 {
@@ -45,6 +46,12 @@ if(isset($_POST['email']) && isset($_POST['password']))
 		//$_SESSION['userId'] = getUserId($_SESSION['email']);
 		//arhivirajLogin($_SESSION['userId']);
 		logIn($_POST['email']);
+		
+		//get timestamp zadnjeg logiranja
+		$timestamp = lastLogged($_SESSION['user']->najDucan);
+		
+		//procjeri ako ima novih komentara
+		$_SESSION['newNotifications'] = checkNotifications($_SESSION['user']->najDucan, $timestamp);
 		header("Location: /RWA_ducani/index.php");
 	}
 	else

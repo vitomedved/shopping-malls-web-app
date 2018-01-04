@@ -12,7 +12,7 @@ function arhivirajLogin($userId)
 	}
 	else
 	{
-		$query = "INSERT INTO `arhiva_logiranja` (`id_arhiva_logiranja`, `vrijeme`, `id_korisnik`) VALUES (NULL, '".$currTime."', '".$userId."');";
+		$query = "INSERT INTO `arhiva_logiranja` (`login`, `id_korisnik`) VALUES ('".$currTime."', '".$userId."');";
 		$result = mysqli_query($link, $query);
 		if(!$result)
 		{

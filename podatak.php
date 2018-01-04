@@ -3,6 +3,7 @@
 include_once 'userClass.php';
 include_once 'connectionToDB.php';
 include_once 'userFunctions.php';
+include_once 'ducanFunctions.php';
 
 if (session_status() == PHP_SESSION_NONE)
 {
@@ -72,7 +73,19 @@ if(isset($_GET['najDucan']))
 <form action='podatak.php' method='get'>
 	Ime: <input type='text' name='imeKorisnika' placeholder='Ime' value='<?php echo($_SESSION['user']->ime) ?>'><br>
 	Prezime: <input type='text' name='prezimeKorisnika' placeholder='Prezime' value='<?php echo $_SESSION['user']->prezime ?>'><br>
-	Najdraži dućani: <input type='text' name='najDucan' placeholder='Najdraži dućan/i' value='<?php echo $_SESSION['user']->najDucan ?>'><br>
+	Najdraži dućan: <!--<input type='text' name='najDucan' placeholder='Najdraži dućan/i' value='<?php echo $_SESSION['user']->najDucan ?>'><br>-->
+	<select name='najDucan'>
+		<?php
+		//uzme sve ducane
+		$ducaniArray = getDucaniArray();
+		//print options of stores
+		foreach($ducaniArray as $ducan)
+		{
+			echo "<option value='".$ducan->ime."'>".$ducan->ime."</option>";
+		}
+		
+		?>
+	</select><br>
 	<input type='submit'>
 </form>
 

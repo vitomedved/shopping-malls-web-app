@@ -30,6 +30,8 @@
 		{
 			echo("Vi ste pleb");
 		}
+		if(isset($_SESSION['newNotifications']))
+			echo $_SESSION['newNotifications']." novih komentara na vaš najdraži dućan!";
 	}
 	else
 	{

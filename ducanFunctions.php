@@ -180,7 +180,7 @@ function listComments($ducanId)
 		{
 			while($row = mysqli_fetch_array($result))
 			{
-				echo("Komentar by: ".$row['ime']." ".$row['prezime'].", vrijeme: ".date('d.m.Y., H:i\h', strtotime($row['vrijeme']))."<br>
+				echo("<a href='userProfil.php?id=".$row['id_korisnik']."' >Komentar by:".$row['ime']." ".$row['prezime'].", vrijeme: ".date('d.m.Y., H:i\h', strtotime($row['vrijeme']))."</a><br>
 				<div>".$row['naslov']."<br>".$row['sadrzaj']."</div><br>");
 				if(isset($_SESSION['loggedIn']) && ($_SESSION['loggedIn'] == true))
 				{
@@ -235,6 +235,28 @@ function getDucaniArray()
 				$ret[] = new ducan($row['id_ducan'], $row['ime'], $row['tip_ducana'], $row['vrsta_ducana'], getRating($row['id_ducan']));
 			}
 			//echo("<a href='index.php'>Povratak na pocetnu</a>");
+		}
+		mysqli_close($link);
+		return $ret;
+	}
+}
+
+function getDucan($ducanId)
+{
+	
+	$link = connectToDB();
+	if($link)
+	{
+		$query = "SELECT * FROM ducan WHERE id_ducan=".$ducanId;
+		$result = mysqli_query($link, $query);
+		$ret = NULL;
+		
+		if($result)
+		{
+			while($row = mysqli_fetch_array($result))
+			{
+				$ret = new ducan($row['id_ducan'], $row['ime'], $row['tip_ducana'], $row['vrsta_ducana'], getRating($row['id_ducan']));
+			}
 		}
 		mysqli_close($link);
 		return $ret;

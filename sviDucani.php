@@ -17,9 +17,9 @@ $ducaniArray = getDucaniArray();
 foreach($ducaniArray as $ducan)
 {
 	echo "ime: ".$ducan->ime.", tip: ".$ducan->tip.", vrsta: ".$ducan->vrsta.", ocjena: ".$ducan->ocjena."<br>
-	<a href=''>Pogledaj dućan</a> | <a href='ducan.php?id=".$ducan->id."'>Pogledaj komentare</a>";
+	<a href='ducanProfil.php?id=".$ducan->id."'>Pogledaj dućan</a> | <a href='ducan.php?id=".$ducan->id."'>Pogledaj komentare</a>";
 	
-	if($_SESSION['user']->razinaOvlasti == 1)
+	if(isset($_SESSION['user']) && ($_SESSION['user']->razinaOvlasti == 1))
 	{
 		echo " | <a href=''>Uredi ducan</a>";
 	}
