@@ -24,7 +24,7 @@ $podatakPostoji = podatakExists($_SESSION['user']->id);
 
 if(!$podatakPostoji)
 {
-	$added = newPodatak($_SESSION['user']->id, $_SESSION['user']->ime, $_SESSION['user']->prezime, $_SESSION['user']->ducan);
+	$added = newPodatak($_SESSION['user']->id, $_SESSION['user']->ime, $_SESSION['user']->prezime, $_SESSION['user']->najDucan);
 	if($added)
 	{
 		header("Location: /RWA_ducani/podatak.php");
@@ -44,7 +44,7 @@ if(isset($_GET['imeKorisnika']))
 	{
 		header("Location: /RWA_ducani/podatak.php");
 	}
-	echo 'ime nije dodano: linija 26, podatak.php';
+	//echo 'ime nije dodano: linija 26, podatak.php';
 	
 }
 
@@ -55,7 +55,7 @@ if(isset($_GET['prezimeKorisnika']))
 	{
 		header("Location: /RWA_ducani/podatak.php");
 	}
-	echo 'prezime nije dodano: linija 35, podatak.php';
+	//echo 'prezime nije dodano: linija 35, podatak.php';
 }
 
 if(isset($_GET['najDucan']))
@@ -65,7 +65,7 @@ if(isset($_GET['najDucan']))
 	{
 		header("Location: /RWA_ducani/podatak.php");
 	}
-	echo 'naj ducan nije dodan: linija 44, podatak.php';
+	//echo 'naj ducan nije dodan: linija 44, podatak.php';
 }
 
 ?>

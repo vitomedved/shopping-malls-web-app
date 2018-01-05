@@ -1,5 +1,7 @@
 <?php
 
+include_once 'adresaFunctions.php';
+
 //vraca prosjecnu ocjenu ducana. ako je greska vratit ce -1 (ili 0?)
 function getRating($ducanId)
 {
@@ -256,6 +258,7 @@ function getDucan($ducanId)
 			while($row = mysqli_fetch_array($result))
 			{
 				$ret = new ducan($row['id_ducan'], $row['ime'], $row['tip_ducana'], $row['vrsta_ducana'], getRating($row['id_ducan']));
+				$ret->adrese = getAdresses($row['id_ducan']);
 			}
 		}
 		mysqli_close($link);
@@ -263,10 +266,60 @@ function getDucan($ducanId)
 	}
 }
 
+function updateIme($ducanId, $ime)
+{
+	$link = connectToDB();
+	if($link)
+	{
+		$ret = false;
+		$query = "UPDATE ducan SET ime='".$ime."' WHERE id_ducan=".$ducanId;
+		$result = mysqli_query($link, $query);
+		if($result)
+		{
+			$ret = true;
+		}
+		mysqli_close($link);
+	}
+	return $ret;
+}
+function updateTip($ducanId, $tip)
+{
+	$link = connectToDB();
+	if($link)
+	{
+		$ret = false;
+		$query = "UPDATE ducan SET tip_ducana='".$tip."' WHERE id_ducan=".$ducanId;
+		$result = mysqli_query($link, $query);
+		if($result)
+		{
+			$ret = true;
+		}
+		mysqli_close($link);
+	}
+	return $ret;
+}
+function updateVrsta($ducanId, $vrsta)
+{
+	$link = connectToDB();
+	if($link)
+	{
+		$ret = false;
+		$query = "UPDATE ducan SET vrsta_ducana='".$vrsta."' WHERE id_ducan=".$ducanId;
+		$result = mysqli_query($link, $query);
+		if($result)
+		{
+			$ret = true;
+		}
+		mysqli_close($link);
+	}
+	return $ret;
+}
+
 //klasa ducana
 class ducan
 {
 	public $id, $ime, $tip, $vrsta, $ocjena;
+	public $adrese;
 	
 	public function __construct($id, $ime, $tip, $vrsta, $ocjena)
 	{
