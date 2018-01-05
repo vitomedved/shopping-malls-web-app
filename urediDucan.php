@@ -44,7 +44,7 @@ if(isset($_GET['grad']) && isset($_GET['postanskiBroj']) && isset($_GET['kucniBr
 
 if(isset($_GET['imeDucana']))
 {
-	updateIme($_GET['id'], $_GET['imeDucana']);
+	updateImeDucana($_GET['id'], $_GET['imeDucana']);
 }
 
 if(isset($_GET['tipDucana']))

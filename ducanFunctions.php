@@ -266,7 +266,7 @@ function getDucan($ducanId)
 	}
 }
 
-function updateIme($ducanId, $ime)
+function updateImeDucana($ducanId, $ime)
 {
 	$link = connectToDB();
 	if($link)
@@ -282,6 +282,7 @@ function updateIme($ducanId, $ime)
 	}
 	return $ret;
 }
+
 function updateTip($ducanId, $tip)
 {
 	$link = connectToDB();

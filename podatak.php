@@ -81,7 +81,12 @@ if(isset($_GET['najDucan']))
 		//print options of stores
 		foreach($ducaniArray as $ducan)
 		{
-			echo "<option value='".$ducan->ime."'>".$ducan->ime."</option>";
+			$isSelected= '';
+			if($ducan->ime == $_SESSION['user']->najDucan)
+			{
+				$isSelected = 'selected';
+			}
+			echo "<option value='".$ducan->ime."' ".$isSelected.">".$ducan->ime."</option>";
 		}
 		
 		?>
