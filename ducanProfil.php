@@ -28,6 +28,11 @@ $ducan = getDucan($_GET['id']);
 
 echo 'Ducan: '.$ducan->ime.', Tip: '.$ducan->tip.', vrsta: '.$ducan->vrsta.', ocjena: '.$ducan->ocjena;
 
+foreach($ducan->adrese as $adresa)
+{
+	echo '<br>adresa u gradu: '.$adresa->grad;
+}
+
 echo "<br><br><a href='sviDucani.php'>Povratak na sve ducane</a> "
 
 

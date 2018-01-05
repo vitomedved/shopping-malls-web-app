@@ -20,7 +20,7 @@
 	{
 		echo("<a href='logout.php'>LOGOUT</a> or <a href='deleteAccount.php'>DELETE ACCOUNT</a>");
 		echo("<br>Your email is: ".$_SESSION['user']->email.", and id: ".$_SESSION['user']->id);
-		echo("<br><a href='podatak.php'> Click here to hange your data</a><br>");
+		echo("<br><a href='podatak.php'> Click here to hange your data</a>, <a href='userProfil.php?id=".$_SESSION['user']->id."'>View profile</a><br>");
 		if($_SESSION['user']->razinaOvlasti)
 		{
 			echo("Vi ste admin, <a href='dodajDucan.php'>dodaj dućan</a><br>");
@@ -28,7 +28,7 @@
 		}
 		else
 		{
-			echo("Vi ste pleb");
+			echo("Vi ste pleb<br>");
 		}
 		if(isset($_SESSION['newNotifications']))
 			echo $_SESSION['newNotifications']." novih komentara na vaš najdraži dućan!";
