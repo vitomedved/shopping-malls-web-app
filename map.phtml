@@ -1,0 +1,91 @@
+<?php
+$actual_link = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+//Pulling the last part of the URL, which will be the vendor name!
+$getpath = explode("/",$actual_link);
+$extensionOfCurrentVendor = end($getpath);
+
+$allData = $this->getDBData($extensionOfCurrentVendor);
+?>
+
+<!-- Od ovdje pa na dalje, krece skripta za gugl maps -->
+<script>
+    //take the inputed values, and according to the address, return lat and long, if invalid or missing data, return map of croatia
+    function initMap(){
+        
+        var lat,lng, z;
+        var locations;
+        var geocoder = new google.maps.Geocoder();
+        var address = [];
+        address.push("'" + <?php echo json_encode($allData[0]) ?> + "'");
+        address.push(address[0] + ", " + "'" + <?php echo json_encode($allData[1]) ?> + "'");
+        address.push(address[1] + ", " + "'" + <?php echo json_encode($allData[2]) ?> + "'");
+        /*
+        if(address[0].toLowerCase() != "hr" || address[0].toLowerCase() != "hrvatska" || address[0].toLowerCase() != "croatia"){
+            console.log("changing address, not found");
+            address[0] = "we cannot find address";
+            address[1] = "Zagreb";
+            address[2] = "Croatia, Zagreb";
+        }
+*/
+        geocoder.geocode({'address': address[2]}, function (results, status) {
+            if(status === 'OK'){
+                console.log(status);
+                console.log("Prolaz 1, Kućni Broj " + address[2]);
+                lat = results[0].geometry.location.lat();
+                lng = results[0].geometry.location.lng();
+                z = 15;
+                drawMap(lat, lng, z);
+                //map.setCenter(results[0].geometry.location);
+
+            }else{
+                //street is non existent
+                console.log(status);
+                //move up by 1 criteria, to a city
+                geocoder.geocode({'address': address[1]}, function (results, status) {
+                    if(status === 'OK'){
+                        console.log("Prolaz 2, ulica " + address[1]);
+                        lat = results[0].geometry.location.lat();
+                        lng = results[0].geometry.location.lng();
+                        z = 14;
+                        drawMap(lat, lng, z);
+                    }else{
+                        //street is non existent
+                        geocoder.geocode({'address': address[0]}, function (results, status) {
+                            //move up by 1 criteira, to a state
+                            if(status === 'OK'){
+                                console.log("Prolaz 3, Grad " + address[0]);
+                                lat = results[0].geometry.location.lat();
+                                lng = results[0].geometry.location.lng();
+                                z = 12;
+                                drawMap(lat, lng, z);
+                            }else{drawMap(45.597289, 16.121357, 6);
+                            }
+                        })
+                    }
+                })
+            }
+        })
+
+        function drawMap(lat, lng, z) {
+            //z = 14
+            var map = new google.maps.Map(document.getElementById('map_canvas'),{
+                zoom: z,
+                center: {lat: lat, lng: lng}
+            });
+
+            var marker = new google.maps.Marker({
+                map: map,
+                position: {lat: lat, lng: lng}
+            });
+        }
+    }
+    console.log("Hello World!!");
+</script>
+
+
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDfydFr5yPURMPa4zs2szkItcAZPLc1I_U&callback=initMap">
+</script>
+<div id="all_canvas" style="height: auto; width: 100%; position: absolute">
+    <div id="map_canvas" style="height:250px; width:250px; position: absolute; top: 20%;" ></div>
+</div>
