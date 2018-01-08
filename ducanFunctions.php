@@ -234,7 +234,7 @@ function getDucaniArray()
 					<br><hr>
 				</div>
 				");*/
-				$ret[] = new ducan($row['id_ducan'], $row['ime'], $row['tip_ducana'], $row['vrsta_ducana'], getRating($row['id_ducan']));
+				$ret[] = new ducan($row['id_ducan'], $row['ime'], $row['tip_ducana'], $row['vrsta_ducana'], getRating($row['id_ducan']), $row['slika']);
 			}
 			//echo("<a href='index.php'>Povratak na pocetnu</a>");
 		}
@@ -257,7 +257,7 @@ function getDucan($ducanId)
 		{
 			while($row = mysqli_fetch_array($result))
 			{
-				$ret = new ducan($row['id_ducan'], $row['ime'], $row['tip_ducana'], $row['vrsta_ducana'], getRating($row['id_ducan']));
+				$ret = new ducan($row['id_ducan'], $row['ime'], $row['tip_ducana'], $row['vrsta_ducana'], getRating($row['id_ducan']), $row['slika']);
 				$ret->adrese = getAdresses($row['id_ducan']);
 			}
 		}
@@ -319,16 +319,17 @@ function updateVrsta($ducanId, $vrsta)
 //klasa ducana
 class ducan
 {
-	public $id, $ime, $tip, $vrsta, $ocjena;
+	public $id, $ime, $tip, $vrsta, $ocjena, $urlSlike;
 	public $adrese;
 	
-	public function __construct($id, $ime, $tip, $vrsta, $ocjena)
+	public function __construct($id, $ime, $tip, $vrsta, $ocjena, $urlSlike)
 	{
 		$this->id = $id;
 		$this->ime = $ime;
 		$this->tip = $tip;
 		$this->vrsta = $vrsta;
 		$this->ocjena = $ocjena;
+		$this->urlSlike = "images/".$ime."/".$urlSlike;
 	}
 }
 

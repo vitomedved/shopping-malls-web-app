@@ -15,9 +15,31 @@ if($_SESSION['user']->razinaOvlasti == 0)
 	header("Location: /RWA_ducani/index.php");
 }
 
-if(isset($_GET['imeDucana']) && isset($_GET['tipDucana']) && isset($_GET['vrstaDucana']))
+if(isset($_POST['imeDucana']) && isset($_POST['tipDucana']) && isset($_POST['vrstaDucana']) && isset($_FILES['image']))
 {
-	$exist = isDucanDuplicate($_GET['imeDucana']);
+	$exist = isDucanDuplicate($_POST['imeDucana']);
+	
+	//slika
+	$_FILES['image']['name'] = explode(' ', $_FILES['image']['name']);
+	$_FILES['image']['name'] = implode('_', $_FILES['image']['name']);
+	
+	$target = "images/";
+	if(!file_exists($target))
+	{
+		mkdir($target);
+	}
+	
+	$target .= $_POST['imeDucana']."/";
+	if(!file_exists($target))
+	{
+		mkdir($target);
+	}
+	
+	if(!file_exists($target.$_FILES['image']['name']))
+	{
+		move_uploaded_file($_FILES['image']['tmp_name'], $target.$_FILES['image']['name']);
+	}
+	//
 	
 	if($exist)
 	{
@@ -25,7 +47,7 @@ if(isset($_GET['imeDucana']) && isset($_GET['tipDucana']) && isset($_GET['vrstaD
 	}
 	else
 	{
-		spremiDucan($_GET['imeDucana'], $_GET['tipDucana'], $_GET['vrstaDucana']);
+		spremiDucan($_POST['imeDucana'], $_POST['tipDucana'], $_POST['vrstaDucana'], $_FILES['image']['name']);
 	}
 }
 
@@ -51,8 +73,8 @@ function isDucanDuplicate($ducanIme)
 
 ?>
 
-<form action='dodajDucan.php'>
-	Ime dućana: <input type='text' name='imeDucana' placeholder='Ime dućana' required><br>
+<form action='dodajDucan.php' method='post' enctype="multipart/form-data">
+	Ime dućana: <input type='text' name='imeDucana' placeholder='Ime dućana' required /><br>
 	Odaberi tip dućana prema artiklu: 
 	<select name='tipDucana' required>
 		<option value='odjeca'>Odjeća</option>
@@ -70,18 +92,19 @@ function isDucanDuplicate($ducanIme)
 		<option value='supermarket'>Supermarket</option>
 		<option value='trgovina'>Trgovina</option>
 	</select><br>
-	<input type='submit'><br>
+	<input type='file' name='image' required /><br>
+	<input type='submit' /><br>
 </form>
 <a href='index.php'> Povratak na početnu stranicu</a>
 
 <?php
 
-function spremiDucan($ime, $tip, $vrsta)
+function spremiDucan($ime, $tip, $vrsta, $slika)
 {
 	$link = connectToDB();
 	if($link)
 	{
-		$query = "INSERT INTO `ducan` (`id_ducan`, `ime`, `tip_ducana`, `vrsta_ducana`) VALUES (NULL, '".$ime."', '".$tip."', '".$vrsta."');";
+		$query = "INSERT INTO `ducan` (`id_ducan`, `ime`, `tip_ducana`, `vrsta_ducana`, slika) VALUES (NULL, '".$ime."', '".$tip."', '".$vrsta."', '".$slika."');";
 		$result = mysqli_query($link, $query);
 		if(!$result)
 		{

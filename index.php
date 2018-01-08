@@ -48,13 +48,13 @@
 		$link = connectToDB();
 		if($link)
 		{
-			$query = "SELECT id_ducan, ime, tip_ducana, vrsta_ducana, IFNULL(SUM(vrijednost)/COUNT(vrijednost), 0) as prosjek FROM ducan LEFT JOIN ocjena USING (id_ducan) GROUP BY id_ducan ORDER BY prosjek DESC LIMIT 4";
+			$query = "SELECT slika, id_ducan, ime, tip_ducana, vrsta_ducana, IFNULL(SUM(vrijednost)/COUNT(vrijednost), 0) as prosjek FROM ducan LEFT JOIN ocjena USING (id_ducan) GROUP BY id_ducan ORDER BY prosjek DESC LIMIT 4";
 			$result = mysqli_query($link, $query);
 			if($result)
 			{
 				while($row = mysqli_fetch_array($result))
 				{
-					$retArray[] = new ducan($row['id_ducan'], $row['ime'], $row['tip_ducana'], $row['vrsta_ducana'], $row['prosjek']);
+					$retArray[] = new ducan($row['id_ducan'], $row['ime'], $row['tip_ducana'], $row['vrsta_ducana'], $row['prosjek'], $row['slika']);
 				}
 			}
 		}

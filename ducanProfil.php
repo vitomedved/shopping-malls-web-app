@@ -25,7 +25,7 @@ else
 }
 
 $ducan = getDucan($_GET['id']);
-
+echo "<img src='".$ducan->urlSlike."' />";
 echo 'Ducan: '.$ducan->ime.', Tip: '.$ducan->tip.', vrsta: '.$ducan->vrsta.', ocjena: '.$ducan->ocjena;
 
 foreach($ducan->adrese as $adresa)

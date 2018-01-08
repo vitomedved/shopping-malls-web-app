@@ -21,7 +21,7 @@ foreach($ducaniArray as $ducan)
 	
 	if(isset($_SESSION['user']) && ($_SESSION['user']->razinaOvlasti == 1))
 	{
-		echo " | <a href='urediDucan.php?id=".$ducan->id."'>Uredi ducan</a>";
+		echo " | <a href='urediDucan.php?id=".$ducan->id."'>Uredi ducan</a> | <a href='izbrisiDucan.php?id=".$ducan->id."'>Izbriši dućan</a>";
 	}
 	
 	echo "<br><hr>";
