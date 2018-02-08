@@ -1,13 +1,10 @@
 <?php
 
-include_once 'adresaFunctions.php';
-include_once 'ducanFunctions.php';
-include_once 'connectionToDB.php';
+include_once 'php/header.php';
 
-if (session_status() == PHP_SESSION_NONE)
-{
-    session_start();
-}
+include_once 'php/adresaFunctions.php';
+include_once 'php/ducanFunctions.php';
+include_once 'php/connectionToDB.php';
 
 //ako nije postavljen id ducana, preusmjeri na index
 if(isset($_GET['id']) == false)
@@ -17,7 +14,6 @@ if(isset($_GET['id']) == false)
 //ako je postavljen index ducana, provjeri ako taj id postoji u bazi
 else
 {
-	$ducanId = $_GET['id'];
 	$exist = doesDucanExist($_GET['id']);
 	if(!$exist)
 	{
@@ -29,7 +25,6 @@ $ducan = getDucan($_GET['id']);
 
 if(isset($_GET['grad']) && isset($_GET['postanskiBroj']) && isset($_GET['kucniBroj']) && isset($_GET['ulica']))
 {
-	echo 'asd';
 	$added = newAdresa($_GET['id'], $_GET['ulica'], $_GET['grad'], $_GET['postanskiBroj'], $_GET['kucniBroj']);
 	if($added)
 	{
@@ -45,132 +40,184 @@ if(isset($_GET['grad']) && isset($_GET['postanskiBroj']) && isset($_GET['kucniBr
 if(isset($_GET['imeDucana']))
 {
 	updateImeDucana($_GET['id'], $_GET['imeDucana']);
+	header("Location: /RWA_ducani/urediDucan.php?id=".$_GET['id']);
 }
 
 if(isset($_GET['tipDucana']))
 {
 	updateTip($_GET['id'], $_GET['tipDucana']);
+	header("Location: /RWA_ducani/urediDucan.php?id=".$_GET['id']);
 }
 
 if(isset($_GET['vrstaDucana']))
 {
 	updateVrsta($_GET['id'], $_GET['vrstaDucana']);
+	header("Location: /RWA_ducani/urediDucan.php?id=".$_GET['id']);
+}
+
+if(isset($_FILES['image']) && !empty($_FILES['image']['name']))
+{
+	unlink($ducan->urlSlike);
+	
+	$_FILES['image']['name'] = explode(' ', $_FILES['image']['name']);
+	$_FILES['image']['name'] = implode('_', $_FILES['image']['name']);
+	
+	$target = "images/";
+	if(!file_exists($target))
+	{
+		mkdir($target);
+	}
+	
+	$target .= "ducani/";
+	if(!file_exists($target))
+	{
+		mkdir($target);
+	}
+	
+	$target .= $ducan->ime."/";
+	if(!file_exists($target))
+	{
+		mkdir($target);
+	}
+	
+	if(!file_exists($target.$_FILES['image']['name']))
+	{
+		move_uploaded_file($_FILES['image']['tmp_name'], $target.$_FILES['image']['name']);
+	}
+	
+	updateSlika($_GET['id'], $_FILES['image']['name']);
+	
+	
 }
 
 $ducan = getDucan($_GET['id']);
 
 ?>
 
-<form action='urediDucan.php?id=<?php echo $_GET['id']; ?>' method='get'>
-	OSNOVNI PODACI:<br>
-	Ime dućana: <input type='text' name='imeDucana' placeholder='Ime' value='<?php echo($ducan->ime) ?>'><br>
-	Tip dućana prema artiklu: 
-	<select name='tipDucana' required>
-		<option value='odjeca'>Odjeća</option>
-		<option value='pokloni'>Pokloni</option>
-		<option value='sport'>Športska oprema</option>
-		<option value='obuca'>Obuća</option>
-		<option value='prehrana'>Prehrana</option>
-		<option value='namjestaj'>Namještaj</option>
-		<option value='igracke'>Igračke</option>
-		<option value='tehnika'>Tehnička roba</option>
-	</select><?php echo 'trenutno postavljeno: '.$ducan->tip ?><br>
-	Vrsta dućana prema veličini: 
-	<select name='vrstaDucana' value='trgovina' required>
-		<option value='tvornica'>Tvornička prodaja</option>
-		<option value='supermarket'>Supermarket</option>
-		<option value='trgovina'>Trgovina</option>
-	</select><?php echo 'trenutno postavljeno: '.$ducan->vrsta ?><br><br>
-<input type='text' name='id' value='<?php echo $_GET['id']; ?>' hidden>	
-	<input type='submit'><br>
-</form>
+<section id="top">
+      <div id="container">
+        <div class="row">
+        	<div class="col-md-6">
+				<form action='urediDucan.php?id=<?php echo $_GET['id']; ?>' method='get'>
+					<h3 class="em-text">OSNOVNI PODACI:</h3><br>
+					<h4>Ime dućana: <input type='text' name='imeDucana' placeholder='Ime' value='<?php echo($ducan->ime) ?>'><br></h4>
+					<h4>Tip dućana prema artiklu:
+					<select name='tipDucana' required>
+						<!--<option value='odjeca'>Odjeća</option>
+						<option value='pokloni'>Pokloni</option>
+						<option value='sport'>Športska oprema</option>
+						<option value='obuca'>Obuća</option>
+						<option value='prehrana'>Prehrana</option>
+						<option value='namjestaj'>Namještaj</option>
+						<option value='igracke'>Igračke</option>
+						<option value='tehnika'>Tehnička roba</option>-->
+						<?php
+						foreach(/*$ducan->tipovi*/getTipovi() as $key => $t)
+						{
+							if($ducan->tip == $key)
+							{
+								echo "<option value='".$key."' selected>".$t."</option>";
+							}
+							else
+							{
+								echo "<option value='".$key."'>".$t."</option>";
+							}
+						}
+						?>
+					</select> <?php //echo 'trenutno postavljeno: '.$ducan->tip ?></h4><br>
+					<h4>Vrsta dućana prema veličini: 
+					<select name='vrstaDucana' value='trgovina' required>
+						<!--<option value='tvornica'>Tvornička prodaja</option>
+						<option value='supermarket'>Supermarket</option>
+						<option value='trgovina'>Trgovina</option>-->
+						<?php
+						foreach(/*$ducan->vrste*/getVrste() as $key => $v)
+						{
+							if($ducan->vrsta == $key)
+							{
+								echo "<option value='".$key."' selected>".$v."</option>";
+							}
+							else
+							{
+								echo "<option value='".$key."'>".$v."</option>";
+							}
+						}
+						?>
+					</select><?php //echo 'trenutno postavljeno: '.$ducan->vrsta ?></h4><br><br>
+					<input type='hidden' name='id' value='<?php echo $_GET['id']; ?>'>	
+					<input type='submit' class="btn btn-default" value='Spremi'><br>
+				</form>
+			</div>
+			<div class="col-md-6">
+				<form action='urediDucan.php?id=<?php echo $_GET['id']; ?>' enctype="multipart/form-data" method='post'>
+					<input type='hidden' name='id' value='<?php echo $_GET['id']; ?>'>
+					<?php echo "<img class='store-img' src='" . $ducan->urlSlike ."' >"; ?><br>
+					<input type='file' name='image'><br>
+					<input type='submit' value='Ažuriraj sliku' class='btn inline btn-success'>
+				</form>
+	    	</div>
+			</div>
+	    </div>
+	</section>
+	
+	<hr>
 
-<form action='urediDucan.php?id=<?php echo $_GET['id']; ?>' method='get'><br>
-	DODAJ NOVU ADRESU:<br>
-	Grad: <input type='text' name='grad' required><br>
-	Poštanski broj: <input type='text' name='postanskiBroj' required><br>
-	Ulica: <input type='text' name='ulica' required><br>
-	Kućni broj: <input type='text' name='kucniBroj' required><br>
-	<input type='text' name='id' value='<?php echo $_GET['id']; ?>' hidden>
-	<input type='submit'>
-</form>
 
-<?php
-
+<section id="contact">
+      <div id="container">
+        <div class="row">
+          <div class="col-md-6">
+            <form action='urediDucan.php?id=<?php echo $_GET['id']; ?>' method='get'>
+				<h3 class="em-text">DODAJ ADRESU:</h3><br>
+              <div class="form-group">
+                <label>Grad</label>
+                <input type="text" class="form-control" id="exampleInputName1" placeholder="Grad" name='grad' required>
+              </div>
+              <div class="form-group">
+                <label>Poštanski broj</label>
+                <input type="text" class="form-control" id="exampleInputCompany1" placeholder="Poštanski broj" name='postanskiBroj' required>
+              </div>
+              <div class="form-group">
+                <label>Ulica</label>
+                <input type="text" class="form-control" id="exampleInputEmail1" placeholder="Ulica" name='ulica' required>
+              </div>
+              <div class="form-group">
+                <label>Kućni broj</label>
+                <input type="text" class="form-control" id="exampleInputEmail1" placeholder="Kucni broj" name='kucniBroj' required>
+              </div>
+			  <input type='text' name='id' value='<?php echo $_GET['id']; ?>' hidden>	
+              <button type="submit" class="btn btn-default">Dodaj</button>
+            </form>
+          </div>
+		  <div class="col-md-6">
+		  <?php
+$ducan = getDucan($_GET['id']);
 echo 'Postojeće adrese:<br>';
 foreach($ducan->adrese as $adresa)
 {
-	echo 'grad: '.$adresa->grad.', ulica: '.$adresa->ulica.', kucni broj: '.$adresa->kucniBroj." <a href='izbrisiAdresu.php?id=".$adresa->id."&ducanId=".$_GET['id']."'>Izbrisi ovu adresu</a><br>";
+	echo"
+			<li>
+				<h5>
+					".$adresa->ulica." ".$adresa->kucniBroj.", ".$adresa->postanskiBroj.", ".$adresa->grad."
+				</h5>
+			<a href='php/izbrisiAdresu.php?id=".$adresa->id."&ducanId=".$_GET['id']."'>Izbrisi ovu adresu</a></li><br>";
 }
 
 ?>
-
-<a href='index.php'> <br>Povratak na početnu stranicu</a>
+		  </div>
+        </div>
+      </div>
+    </section>
+	<section id="contact">
+		<div class='container'>
+			<form action='php/izbrisiDucan.php'>
+				<input type='hidden' name='id' value='<?php echo $_GET['id'] ?>'>
+				<button class='btn btn-lg btn-danger'>IZBRISI DUĆAN</button>
+			</form>
+		</div>
+	</section>
+	<div style='height:100px;'></div>
 
 <?php
-
-/*function doesAdresaExist($ducanId)
-{
-	$ret = false;
-	$link = connectToDB();
-	if($link)
-	{
-		$query = "SELECT id_ducan FROM adresa_has_ducan WHERE id_ducan=".$ducanId;
-		$result = mysqli_query($link, $query);
-		if($result)
-		{
-			while($row = mysqli_fetch_array($result))
-			{
-				$ret = true;
-				break;
-			}
-		}
-		mysqli_close($link);
-	}
-	return $ret;
-}*/
-
-//napravi novi podatak u tablici adresa i automatski u adresa_has_ducan stavi odgovarajucu vezu izmedu ducana i adrese
-function newAdresa($ducanId, $ulica, $grad, $postanski, $kucni)
-{
-	$retVal = false;
-	$link = connectToDB();
-	if($link)
-	{
-		$query = "INSERT INTO `adresa` (`id_adresa`, `ulica`, `grad`, `postanski_broj`, `kucni_broj`) VALUES (NULL, '".$ulica."', '".$grad."', ".$postanski.", ".$kucni.");";
-		$result = mysqli_query($link, $query);
-		if($result)
-		{
-			$adresaId = mysqli_insert_id($link);
-			$query = "INSERT INTO adresa_has_ducan (id_adresa, id_ducan) VALUES (".$adresaId.", ".$ducanId.");";
-			$result = mysqli_query($link, $query);
-			if($result)
-			{
-				$retVal = true;
-			}
-		}
-		mysqli_close($link);
-	}
-	return $retVal;
-}
-
-/* PATTERN
-	$link = connectToDB();
-	if($link)
-	{
-		$query = "";
-		$result = mysqli_query($link, $query);
-		if($result)
-		{
-			while($row = mysqli_fetch_array($result))
-			{
-				
-			}
-		}
-		mysqli_close($link);
-	}
-*/
-
-
+include_once 'php/footer.php';
 ?>
-

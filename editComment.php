@@ -1,14 +1,11 @@
 <?php
 
-include_once 'userClass.php';
-include_once 'connectionToDB.php';
-include_once 'komentarFunctions.php';
-include_once 'userFunctions.php';
+include_once 'php/header.php';
 
-if (session_status() == PHP_SESSION_NONE)
-{
-    session_start();
-}
+include_once 'php/userClass.php';
+include_once 'php/connectionToDB.php';
+include_once 'php/komentarFunctions.php';
+include_once 'php/userFunctions.php';
 
 if(isGuest() || !isset($_GET['commentId']) || !isset($_GET['ducanId']))
 {
@@ -18,7 +15,7 @@ if(isGuest() || !isset($_GET['commentId']) || !isset($_GET['ducanId']))
 $ducanId = $_GET['ducanId'];
 $commentId = $_GET['commentId'];
 
-$isOwner = validateOwnership($commentId, $_SESSION['user']->id);
+$isOwner = validateOwnership($commentId, $_SESSION['userId']);
 if(!$isOwner)
 {
 	header("Location: /RWA_ducani/error.php");
@@ -42,7 +39,7 @@ if(isset($_POST['sadrzaj']))
 	}
 	$sadrzaj = $_POST['sadrzaj'];
 	
-	$edited = editComment($commentId, $_SESSION['user']->id, $naslov, $sadrzaj);
+	$edited = editComment($commentId, $_SESSION['userId'], $naslov, $sadrzaj);
 	if($edited)
 	{
 		header("Location: /RWA_ducani/ducan.php?id=".$_GET['ducanId']);
@@ -55,11 +52,15 @@ if(isset($_POST['sadrzaj']))
 
 ?>
 
+
 <form action='editComment.php?commentId=<?php echo($_GET['commentId']) ?>&ducanId=<?php echo($_GET['ducanId']) ?>' method='post'>
-	<br>
-	<input type='text' name='naslov' placeholder='Naslov komentara (neobavezno)' value='<?php echo $naslov ?>'><br>
-	<textarea name='sadrzaj' placeholder='Ovdje piši svoj komentar' required><?php echo $sadrzaj ?></textarea><br>
-	<input type='submit'>
+	<div class="col-md-12">
+		<label>Naslov</label>
+		<input name='naslov' type="text" class="form-control" id="exampleInputName1" placeholder="Naslov Komentara" value='<?php echo $naslov ?>' <?php if(isGuest()) echo 'disabled'; ?>>
+		<label>Komentar</label>
+		<textarea name='sadrzaj' class="form-control" rows="5" id="comment" placeholder="Komentar" <?php if(isGuest()) echo 'disabled'; ?>><?php echo $sadrzaj ?></textarea><br>
+		<input type='submit' class="btn btn-xxl btn-yellow" <?php if(isGuest()) echo 'disabled'; ?> value='Spremi'>
+	</div>
 </form>
 
 <?php
